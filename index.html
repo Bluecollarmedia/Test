@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORCONCRETE</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0d0d0d; overflow-x: hidden; }
+
+    #wrapper { height: 600vh; }
+
+    #stage {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #bg {
+      position: absolute;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 38%;
+      filter: blur(5px) brightness(0.48) saturate(0.6);
+      transform: scale(1.07);
+      will-change: transform;
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 38px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.65);
+      font: 300 11px/1 'Helvetica Neue', Arial, sans-serif;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      transition: opacity 0.9s ease;
+      pointer-events: none;
+      text-align: center;
+    }
+    #hint .arr {
+      display: block;
+      margin-top: 10px;
+      font-size: 18px;
+      animation: bob 1.5s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(8px); }
+    }
+
+    #phase-label {
+      position: fixed;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.5);
+      font: 300 11px/1 'Helvetica Neue', Arial, sans-serif;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="wrapper">
+  <div id="stage">
+    <img id="bg" src="bg.jpg" alt="CORCONCRETE construction site">
+    <canvas id="c"></canvas>
+  </div>
+</div>
+
+<div id="hint">Scroll<span class="arr">↓</span></div>
+<div id="phase-label" id="phase-label"></div>
+
+<script>
+(() => {
+  const cvs   = document.getElementById('c');
+  const ctx   = cvs.getContext('2d');
+  const wrap  = document.getElementById('wrapper');
+  const hint  = document.getElementById('hint');
+  const label = document.getElementById('phase-label');
+
+  let prog = 0;
+  let hintGone = false;
+
+  /* ── utils ── */
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp  = (a, b, t) => a + (b - a) * t;
+  const ease  = t => { t = clamp(t,0,1); return t<.5 ? 4*t**3 : 1-(-2*t+2)**3/2; };
+
+  /* ── resize ── */
+  function resize() {
+    cvs.width  = window.innerWidth;
+    cvs.height = window.innerHeight;
+  }
+
+  /* ────────────────────────────────────────────
+     Draw a strip of caution tape
+     x, y = top-left corner; w = width; h = height
+  ─────────────────────────────────────────────*/
+  function drawTape(x, y, w, h) {
+    if (w < 1 || h < 1) return;
+    ctx.save();
+
+    /* clip to tape rectangle */
+    ctx.beginPath();
+    ctx.rect(x, y, w, h);
+    ctx.clip();
+
+    /* base yellow */
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+
+    /* subtle diagonal grain */
+    ctx.strokeStyle = 'rgba(0,0,0,0.065)';
+    ctx.lineWidth = 19;
+    for (let sx = x - h * 2; sx < x + w + h * 2; sx += 36) {
+      ctx.beginPath();
+      ctx.moveTo(sx,       y);
+      ctx.lineTo(sx + h * 1.7, y + h);
+      ctx.stroke();
+    }
+
+    /* horizontal divider lines */
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+    ctx.lineWidth = Math.max(1, h * 0.025);
+    [h * 0.27, h * 0.73].forEach(dy => {
+      ctx.beginPath();
+      ctx.moveTo(x,     y + dy);
+      ctx.lineTo(x + w, y + dy);
+      ctx.stroke();
+    });
+
+    /* text sizes */
+    const sf = clamp(h * 0.225, 7, 16);   /* small "CAUTION" */
+    const bf = clamp(h * 0.42,  12, 32);  /* big "CORCONCRETE" */
+
+    /* CAUTION — top band */
+    ctx.font = `bold ${sf}px "Arial Narrow",Arial,sans-serif`;
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    ctx.textBaseline = 'top';
+    const ct = 'CAUTION  ';
+    const cw = ctx.measureText(ct).width;
+    for (let tx = x - cw; tx < x + w + cw; tx += cw)
+      ctx.fillText(ct, tx, y + h * 0.04);
+
+    /* CAUTION — bottom band */
+    ctx.textBaseline = 'bottom';
+    for (let tx = x - cw; tx < x + w + cw; tx += cw)
+      ctx.fillText(ct, tx, y + h * 0.96);
+
+    /* CORCONCRETE — center */
+    ctx.font = `bold ${bf}px "Arial Narrow",Arial,sans-serif`;
+    ctx.textBaseline = 'middle';
+    const bt = 'CORCONCRETE  ';
+    const bw = ctx.measureText(bt).width;
+    for (let tx = x - bw; tx < x + w + bw; tx += bw)
+      ctx.fillText(bt, tx, y + h * 0.5);
+
+    ctx.restore();
+  }
+
+  /* ────────────────────────────────────────────
+     Draw the tape roll (wound spool)
+     cx, cy = center; R = outer radius
+  ─────────────────────────────────────────────*/
+  function drawRoll(cx, cy, R) {
+    if (R < 1) return;
+    ctx.save();
+
+    /* drop shadow */
+    ctx.shadowColor    = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur     = 28;
+    ctx.shadowOffsetX  = 7;
+    ctx.shadowOffsetY  = 12;
+
+    /* wound layers — concentric rings */
+    const step = clamp(R * 0.055, 2.5, 7);
+    let r = R, i = 0;
+    while (r > R * 0.16) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = i % 2 === 0 ? '#FFD700' : '#e0aa00';
+      ctx.fill();
+      r -= step; i++;
+    }
+
+    /* thin black ring lines for definition */
+    ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+    r = R;
+    i = 0;
+    while (r > R * 0.16) {
+      if (i % 3 === 0) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+      r -= step; i++;
+    }
+
+    /* outer edge */
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    /* hub */
+    const hub = clamp(R * 0.15, 3, 20);
+    ctx.beginPath();
+    ctx.arc(cx, cy, hub, 0, Math.PI * 2);
+    ctx.fillStyle = '#3a3a3a';
+    ctx.fill();
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    /* hub highlight */
+    ctx.beginPath();
+    ctx.arc(cx - hub * 0.28, cy - hub * 0.28, hub * 0.35, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  /* ────────────────────────────────────────────
+     Draw the curved tape-wrap entering the roll
+     (the last bit of tape visibly curling into spool)
+  ─────────────────────────────────────────────*/
+  function drawWrapArc(cx, cy, R, th, alpha) {
+    if (R < 3 || alpha < 0.01) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    /* arc of tape sitting on the roll surface, entering from the left */
+    const innerR = R + 1;
+    const outerR = R + th * 0.22;
+    const startA = Math.PI;          /* 9 o'clock — where tape enters */
+    const endA   = Math.PI * 0.62;  /* ~10:45 o'clock — where it disappears */
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, outerR, endA,   startA); /* outer arc */
+    ctx.arc(cx, cy, innerR, startA, endA, true); /* inner arc reversed */
+    ctx.closePath();
+    ctx.fillStyle = '#FFD700';
+    ctx.fill();
+
+    /* text on the wrap arc */
+    ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  /* ────────────────────────────────────────────
+     Main render loop
+  ─────────────────────────────────────────────*/
+  function draw() {
+    const W = cvs.width;
+    const H = cvs.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const p  = prog;
+    const cy = H * 0.5;
+
+    /* responsive sizing */
+    const th   = clamp(H * 0.088, 40, 80);     /* tape height */
+    const Rmax = clamp(Math.min(W * 0.14, H * 0.21), 55, 148);
+    const Rmin = Rmax * 0.26;
+    const rcx  = W - Rmax - 38;                /* roll center X — fixed */
+
+    /* ── phase easing ── */
+    const t1 = ease(clamp(p / 0.30,         0, 1)); /* 0–30%   strips join    */
+    const t2 = ease(clamp((p - 0.30) / 0.20, 0, 1)); /* 30–50%  roll appears   */
+    const t3 = ease(clamp((p - 0.50) / 0.50, 0, 1)); /* 50–100% wind-up        */
+
+    /* gap between strips */
+    const maxGap = H * 0.11;
+    const gap    = lerp(maxGap, 0, t1);
+
+    /* roll radius: grows in two stages */
+    const R = t2 * Rmin + t3 * (Rmax - Rmin);
+
+    /* tape geometry */
+    const topY      = cy - th - gap;          /* top-left Y of upper strip   */
+    const botY      = cy + gap;               /* top-left Y of lower strip   */
+    const tapeRight = R > 0 ? rcx - R : W + 10; /* tape ends at roll surface */
+    const tapeLeft  = tapeRight * t3;         /* retreats rightward phase 3  */
+    const tapeW     = tapeRight - tapeLeft;
+
+    /* ── shadow pass (single rect for performance) ── */
+    if (tapeW > 4) {
+      ctx.save();
+      ctx.shadowColor   = 'rgba(0,0,0,0.45)';
+      ctx.shadowBlur    = 18;
+      ctx.shadowOffsetY = 9;
+      ctx.fillStyle     = '#FFD700';
+      ctx.fillRect(tapeLeft, topY, tapeW, th);
+      ctx.fillRect(tapeLeft, botY, tapeW, th);
+      ctx.restore();
+    }
+
+    /* ── tape strips ── */
+    drawTape(tapeLeft, topY, tapeW, th);
+    drawTape(tapeLeft, botY, tapeW, th);
+
+    /* ── wrap arc on roll surface ── */
+    drawWrapArc(rcx, cy, R, th, Math.min(t3 * 3, 0.9));
+
+    /* ── roll ── */
+    if (R > 0.5) drawRoll(rcx, cy, R);
+
+    /* ── phase label ── */
+    const phases = [
+      [0.00, 0.30, 'Coming Together'],
+      [0.30, 0.50, 'Roll Forming'],
+      [0.50, 1.00, 'Winding Up'],
+    ];
+    let phaseText = '';
+    for (const [lo, hi, name] of phases) {
+      if (p >= lo && p < hi) { phaseText = name; break; }
+    }
+    label.textContent = phaseText;
+  }
+
+  /* ── scroll driver ── */
+  window.addEventListener('scroll', () => {
+    const maxScroll = wrap.offsetHeight - window.innerHeight;
+    prog = clamp(window.scrollY / maxScroll, 0, 1);
+    if (!hintGone) { hint.style.opacity = '0'; hintGone = true; }
+  }, { passive: true });
+
+  window.addEventListener('resize', () => { resize(); draw(); });
+
+  function loop() { draw(); requestAnimationFrame(loop); }
+
+  resize();
+  loop();
+})();
+</script>
+</body>
+</html>
