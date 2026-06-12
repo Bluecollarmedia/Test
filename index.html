@@ -173,98 +173,121 @@
   }
 
   /* ────────────────────────────────────────────
-     Draw the tape roll (wound spool)
-     cx, cy = center; R = outer radius
+     Draw text character-by-character along an arc
   ─────────────────────────────────────────────*/
-  function drawRoll(cx, cy, R) {
+  function drawArcText(cx, cy, r, text, startAngle, fontSize) {
+    ctx.save();
+    ctx.font = `bold ${fontSize}px "Arial Narrow",Arial,sans-serif`;
+    ctx.fillStyle = 'rgba(0,0,0,0.68)';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    const tw   = ctx.measureText(text).width;
+    const reps = Math.ceil((2 * Math.PI * r) / tw) + 1;
+    const full = text.repeat(reps);
+
+    let angle = startAngle;
+    for (const ch of full) {
+      const cw = ctx.measureText(ch).width;
+      const da = cw / r;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle + da / 2);
+      ctx.fillText(ch, 0, -r);
+      ctx.restore();
+      angle += da;
+      if (angle >= startAngle + Math.PI * 2) break;
+    }
+    ctx.restore();
+  }
+
+  /* ────────────────────────────────────────────
+     Draw the roll face-on (flat face toward viewer)
+     so CORCONCRETE text is readable on each wound layer
+  ─────────────────────────────────────────────*/
+  function drawRollFace(cx, cy, R, rotAngle) {
     if (R < 1) return;
     ctx.save();
 
     /* drop shadow */
-    ctx.shadowColor    = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur     = 28;
-    ctx.shadowOffsetX  = 7;
-    ctx.shadowOffsetY  = 12;
-
-    /* wound layers — concentric rings */
-    const step = clamp(R * 0.055, 2.5, 7);
-    let r = R, i = 0;
-    while (r > R * 0.16) {
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fillStyle = i % 2 === 0 ? '#FFD700' : '#e0aa00';
-      ctx.fill();
-      r -= step; i++;
-    }
-
-    /* thin black ring lines for definition */
+    ctx.shadowColor   = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur    = 28;
+    ctx.shadowOffsetX = 6;
+    ctx.shadowOffsetY = 12;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = '#555';
+    ctx.fill();
     ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-    r = R;
-    i = 0;
-    while (r > R * 0.16) {
-      if (i % 3 === 0) {
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0,0,0,0.18)';
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
+
+    /* clip all inner drawing to the circle */
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.clip();
+
+    const coreR  = Math.max(5, R * 0.17);
+    const layerH = clamp(R * 0.08, 4, 12);
+
+    /* tape rings from core outward */
+    let r = coreR, i = 0;
+    while (r < R) {
+      const r2  = Math.min(r + layerH, R);
+      const mid = (r + r2) / 2;
+
+      /* yellow fill */
+      ctx.beginPath();
+      ctx.arc(cx, cy, r2, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r,  0, Math.PI * 2, true);
+      ctx.fillStyle = i % 2 === 0 ? '#FFD700' : '#e6ae00';
+      ctx.fill();
+
+      /* ring edge */
+      ctx.beginPath();
+      ctx.arc(cx, cy, r2, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      /* CORCONCRETE text wrapping this ring */
+      const fSize = clamp(layerH * 0.72, 4, 10);
+      if (layerH > 5.5) {
+        drawArcText(cx, cy, mid, 'CORCONCRETE  ', rotAngle - i * 1.1, fSize);
       }
-      r -= step; i++;
+
+      r = r2; i++;
     }
 
-    /* outer edge */
+    /* cardboard core */
+    ctx.beginPath();
+    ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+    ctx.fillStyle = '#b87b3e';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    /* centre hole */
+    ctx.beginPath();
+    ctx.arc(cx, cy, coreR * 0.38, 0, Math.PI * 2);
+    ctx.fillStyle = '#222';
+    ctx.fill();
+
+    ctx.restore();
+
+    /* outer rim */
     ctx.beginPath();
     ctx.arc(cx, cy, R, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(0,0,0,0.55)';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    /* hub */
-    const hub = clamp(R * 0.15, 3, 20);
-    ctx.beginPath();
-    ctx.arc(cx, cy, hub, 0, Math.PI * 2);
-    ctx.fillStyle = '#3a3a3a';
-    ctx.fill();
-    ctx.strokeStyle = '#111';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    /* hub highlight */
-    ctx.beginPath();
-    ctx.arc(cx - hub * 0.28, cy - hub * 0.28, hub * 0.35, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  /* ────────────────────────────────────────────
-     Draw the curved tape-wrap entering the roll
-     (the last bit of tape visibly curling into spool)
-  ─────────────────────────────────────────────*/
-  function drawWrapArc(cx, cy, R, th, alpha) {
-    if (R < 3 || alpha < 0.01) return;
+    /* tape-peel accent at 9 o'clock — where tape feeds in */
     ctx.save();
-    ctx.globalAlpha = alpha;
-
-    /* arc of tape sitting on the roll surface, entering from the left */
-    const innerR = R + 1;
-    const outerR = R + th * 0.22;
-    const startA = Math.PI;          /* 9 o'clock — where tape enters */
-    const endA   = Math.PI * 0.62;  /* ~10:45 o'clock — where it disappears */
-
     ctx.beginPath();
-    ctx.arc(cx, cy, outerR, endA,   startA); /* outer arc */
-    ctx.arc(cx, cy, innerR, startA, endA, true); /* inner arc reversed */
-    ctx.closePath();
-    ctx.fillStyle = '#FFD700';
-    ctx.fill();
-
-    /* text on the wrap arc */
-    ctx.strokeStyle = 'rgba(0,0,0,0.28)';
-    ctx.lineWidth = 1.2;
+    ctx.arc(cx, cy, R + 1, Math.PI - 0.22, Math.PI + 0.22);
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = clamp(layerH * 0.85, 4, 11);
     ctx.stroke();
-
     ctx.restore();
   }
 
@@ -320,11 +343,9 @@
     drawTape(tapeLeft, topY, tapeW, th);
     drawTape(tapeLeft, botY, tapeW, th);
 
-    /* ── wrap arc on roll surface ── */
-    drawWrapArc(rcx, cy, R, th, Math.min(t3 * 3, 0.9));
-
-    /* ── roll ── */
-    if (R > 0.5) drawRoll(rcx, cy, R);
+    /* ── roll face (spins as tape winds in) ── */
+    const rotAngle = t3 * Math.PI * 5;
+    if (R > 0.5) drawRollFace(rcx, cy, R, rotAngle);
 
     /* ── phase label ── */
     const phases = [
