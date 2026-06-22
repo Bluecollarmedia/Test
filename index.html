@@ -211,48 +211,16 @@
       50%      { transform: translateX(-50%) translateY(8px); }
     }
 
-    /* ── HERO DISSOLVE ── */
-    .hero-dissolve {
+    /* ── HERO INK POUR (thick organic page-break) ── */
+    #hero-ink {
       position: absolute;
-      bottom: -130px;
-      left: -2%;
-      width: 104%;
-      height: 160px;
+      bottom: -320px;
+      left: 0;
+      width: 100%;
+      height: 380px;
       z-index: 12;
       pointer-events: none;
-    }
-    .hero-dissolve svg {
-      width: 100%;
-      height: 100%;
       display: block;
-    }
-
-    /* ── MARQUEE ── */
-    .marquee-band {
-      width: 100%;
-      background: #0a0a0a;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      overflow: hidden;
-      padding: 14px 0;
-    }
-    .marquee-track {
-      display: flex;
-      white-space: nowrap;
-      animation: marquee 22s linear infinite;
-    }
-    .marquee-track span {
-      display: inline-block;
-      padding: 0 0;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-    @keyframes marquee {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
     }
 
     /* ── SECTION WRAPPER ── */
@@ -613,61 +581,12 @@
   </div>
   <div class="scroll-cue"><div class="chev"></div></div>
 
-  <!-- Organic dissolve transition — hero bleeds into about -->
-  <div class="hero-dissolve" aria-hidden="true">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 160" preserveAspectRatio="none">
-      <defs>
-        <filter id="blob-dissolve" x="-5%" y="-5%" width="110%" height="120%" color-interpolation-filters="sRGB">
-          <feTurbulence type="turbulence" baseFrequency="0.018 0.032" numOctaves="5" seed="23" result="noise"/>
-          <feColorMatrix type="matrix"
-            values="0 0 0 0 0
-                    0 0 0 0 0
-                    0 0 0 0 0
-                    0 0 0 22 -7"
-            in="noise" result="mask"/>
-          <feFlood flood-color="#0d0d0d" result="fill"/>
-          <feComposite in="fill" in2="mask" operator="in" result="blobs"/>
-          <feMerge>
-            <feMergeNode in="blobs"/>
-          </feMerge>
-        </filter>
-        <!-- Subtle orange tint layer for brand flavor -->
-        <filter id="blob-glow" x="-5%" y="-5%" width="110%" height="120%" color-interpolation-filters="sRGB">
-          <feTurbulence type="turbulence" baseFrequency="0.022 0.04" numOctaves="4" seed="41" result="noise2"/>
-          <feColorMatrix type="matrix"
-            values="0 0 0 0 0
-                    0 0 0 0 0
-                    0 0 0 0 0
-                    0 0 0 18 -10"
-            in="noise2" result="mask2"/>
-          <feFlood flood-color="#E86600" result="orange"/>
-          <feComposite in="orange" in2="mask2" operator="in"/>
-        </filter>
-      </defs>
-      <!-- Base gradient that darkens toward bottom of hero -->
-      <rect width="1440" height="60" fill="url(#heroGrad)"/>
-      <!-- Organic dark blobs — main dissolve body -->
-      <rect width="1440" height="160" filter="url(#blob-dissolve)" opacity="1"/>
-      <!-- Faint orange bleeding through the cracks -->
-      <rect width="1440" height="160" filter="url(#blob-glow)" opacity="0.12"/>
-      <defs>
-        <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#0d0d0d" stop-opacity="1"/>
-          <stop offset="100%" stop-color="#0d0d0d" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  </div>
+  <!-- Canvas ink pour — thick organic page break, covers full width -->
+  <canvas id="hero-ink" aria-hidden="true"></canvas>
 </section>
 
 <!-- ── ABOUT ── -->
 <section id="about">
-  <!-- Marquee emerges first as you scroll past the dissolve -->
-  <div class="marquee-band">
-    <div class="marquee-track">
-      <span>VIDEO PRODUCTION &nbsp;&nbsp;·&nbsp;&nbsp; WEB DESIGN &nbsp;&nbsp;·&nbsp;&nbsp; THE PACKAGE DEAL &nbsp;&nbsp;·&nbsp;&nbsp; BLUE COLLAR MEDIA &nbsp;&nbsp;·&nbsp;&nbsp; NJ BASED &nbsp;&nbsp;·&nbsp;&nbsp; VIDEO PRODUCTION &nbsp;&nbsp;·&nbsp;&nbsp; WEB DESIGN &nbsp;&nbsp;·&nbsp;&nbsp; THE PACKAGE DEAL &nbsp;&nbsp;·&nbsp;&nbsp; BLUE COLLAR MEDIA &nbsp;&nbsp;·&nbsp;&nbsp; NJ BASED &nbsp;&nbsp;·&nbsp;&nbsp; VIDEO PRODUCTION &nbsp;&nbsp;·&nbsp;&nbsp; WEB DESIGN &nbsp;&nbsp;·&nbsp;&nbsp; THE PACKAGE DEAL &nbsp;&nbsp;·&nbsp;&nbsp; BLUE COLLAR MEDIA &nbsp;&nbsp;·&nbsp;&nbsp; NJ BASED &nbsp;&nbsp;·&nbsp;&nbsp;</span>
-    </div>
-  </div>
   <div class="wrap">
     <p class="eyebrow fu">What We Do</p>
     <div class="about-inner">
@@ -840,6 +759,58 @@
 </footer>
 
 <script>
+  // ── INK POUR canvas ──
+  // Draws a thick organic blob mass that acts as a solid page-break
+  // between the hero and about sections. No uniform teeth — just
+  // overlapping large circles creating a naturally chaotic edge.
+  function drawInk() {
+    const canvas = document.getElementById('hero-ink');
+    if (!canvas) return;
+    const W = canvas.width  = canvas.offsetWidth  || window.innerWidth;
+    const H = canvas.height = canvas.offsetHeight || 380;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, W, H);
+
+    // Seeded pseudo-random — same look every render
+    function sr(n) {
+      const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+      return x - Math.floor(x);
+    }
+
+    const BG = '#0d0d0d';
+
+    // Solid top band (top 55% of canvas)
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H * 0.55);
+
+    // 60 large overlapping circles create the organic chaotic edge
+    const count = 60;
+    for (let i = 0; i < count; i++) {
+      const x  = sr(i)       * W;
+      const y  = H * 0.38 + sr(i + 100) * H * 0.52;
+      const r  = 90 + sr(i + 200) * 160;  // radius 90–250px — BIG blobs
+      ctx.fillStyle = BG;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Extra pass: fill any remaining gaps at the top half
+    for (let i = 0; i < 20; i++) {
+      const x = sr(i + 300) * W;
+      const y = H * 0.1 + sr(i + 400) * H * 0.35;
+      const r = 60 + sr(i + 500) * 100;
+      ctx.fillStyle = BG;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  drawInk();
+  window.addEventListener('resize', drawInk, { passive: true });
+
+  // ── SCROLL / NAV ──
   const prog    = document.getElementById('prog');
   const nav     = document.getElementById('nav');
   const navGear = document.getElementById('nav-gear');
