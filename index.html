@@ -3,377 +3,229 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CORCONCRETE</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0d0d0d; overflow-x: hidden; }
-
-    #wrapper { height: 600vh; }
-
-    #stage {
-      position: sticky;
-      top: 0;
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    #bg {
-      position: absolute;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      object-position: center 38%;
-      filter: blur(5px) brightness(0.48) saturate(0.6);
-      transform: scale(1.07);
-      will-change: transform;
-    }
-
-    canvas {
-      position: absolute;
-      inset: 0;
-      display: block;
-    }
-
-    #hint {
-      position: fixed;
-      bottom: 38px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.65);
-      font: 300 11px/1 'Helvetica Neue', Arial, sans-serif;
-      letter-spacing: 5px;
-      text-transform: uppercase;
-      transition: opacity 0.9s ease;
-      pointer-events: none;
-      text-align: center;
-    }
-    #hint .arr {
-      display: block;
-      margin-top: 10px;
-      font-size: 18px;
-      animation: bob 1.5s ease-in-out infinite;
-    }
-    @keyframes bob {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(8px); }
-    }
-
-    #phase-label {
-      position: fixed;
-      top: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.5);
-      font: 300 11px/1 'Helvetica Neue', Arial, sans-serif;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      transition: opacity 0.4s;
-      pointer-events: none;
-    }
-  </style>
+  <title>Blue Collar Media</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div id="wrapper">
-  <div id="stage">
-    <img id="bg" src="bg.jpg" alt="CORCONCRETE construction site">
-    <canvas id="c"></canvas>
+<div id="prog"></div>
+
+<!-- ── NAV ── -->
+<nav id="nav">
+  <div class="logo-wrap">
+    <img src="logo.png" alt="Blue Collar Media">
+    <svg id="nav-gear" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M19.14 12.94c.04-.3.06-.62.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.3 7.3 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54a7.3 7.3 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.47.41h3.84c.24 0 .44-.17.48-.41l.36-2.54a7.3 7.3 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
+    </svg>
   </div>
-</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#reel">Work</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
 
-<div id="hint">Scroll<span class="arr">↓</span></div>
-<div id="phase-label" id="phase-label"></div>
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-bg">
+    <!-- Add hero.mp4 to repo root to activate: -->
+    <!-- <video autoplay muted loop playsinline><source src="hero.mp4" type="video/mp4"></video> -->
+  </div>
+  <svg id="hero-gear" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M19.14 12.94c.04-.3.06-.62.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.3 7.3 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54a7.3 7.3 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.47.41h3.84c.24 0 .44-.17.48-.41l.36-2.54a7.3 7.3 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
+  </svg>
+  <svg id="hero-gear2" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M19.14 12.94c.04-.3.06-.62.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.3 7.3 0 0 0-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.47.41l-.36 2.54a7.3 7.3 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58a.48.48 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.47.41h3.84c.24 0 .44-.17.48-.41l.36-2.54a7.3 7.3 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
+  </svg>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">BLUE COLLAR<br><span class="accent">MEDIA</span></h1>
+    <p class="hero-sub">Video Production &nbsp;&middot;&nbsp; Web Design &nbsp;&middot;&nbsp; The Package Deal</p>
+    <a href="#contact" class="hero-cta">Work With Us</a>
+  </div>
+  <div class="scroll-cue"><div class="chev"></div></div>
 
-<script>
-(() => {
-  const cvs   = document.getElementById('c');
-  const ctx   = cvs.getContext('2d');
-  const wrap  = document.getElementById('wrapper');
-  const hint  = document.getElementById('hint');
-  const label = document.getElementById('phase-label');
+  <!-- Canvas ink pour — thick organic page break, covers full width -->
+  <canvas id="hero-ink" aria-hidden="true"></canvas>
+</section>
 
-  let prog = 0;
-  let hintGone = false;
+<!-- ── ABOUT ── -->
+<section id="about">
+  <div class="wrap">
+    <p class="eyebrow fu">What We Do</p>
+    <div class="about-inner">
+      <div class="about-left fl">
+        <div class="about-accent-line"></div>
+        <h2 class="sec-h">BUILT FOR BUSINESSES THAT DO REAL WORK</h2>
+        <span class="about-tag">New Jersey &mdash; Available Nationwide</span>
+      </div>
+      <div class="about-right fu" style="transition-delay:.12s">
+        <p>Blue Collar Media is built for businesses that do real work. We create promotional and advertising video content for companies across every industry — capturing what makes your brand worth watching.</p>
+        <p>From trades and contractors to any business that needs to be seen, we handle the camera, the story, and the strategy. We also build websites that match the quality of your work.</p>
+        <p>No fluff. No filler. Just content that converts.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  /* ── utils ── */
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const lerp  = (a, b, t) => a + (b - a) * t;
-  const ease  = t => { t = clamp(t,0,1); return t<.5 ? 4*t**3 : 1-(-2*t+2)**3/2; };
+<!-- ── SERVICES ── -->
+<section id="services" class="section-rule">
+  <div class="wrap">
+    <p class="eyebrow fu">What We Offer</p>
+    <h2 class="sec-h fu">SERVICES</h2>
+    <div class="svc-list">
 
-  /* ── resize ── */
-  function resize() {
-    cvs.width  = window.innerWidth;
-    cvs.height = window.innerHeight;
-  }
+      <div class="svc-item fu">
+        <div class="svc-num">01</div>
+        <div class="svc-body">
+          <div class="svc-name">Video &amp; Promo Production</div>
+          <p class="svc-desc">Promotional and advertising video content for businesses of all kinds. We make your brand look as good as it is — every frame, every cut, every story told the right way.</p>
+        </div>
+      </div>
 
-  /* ────────────────────────────────────────────
-     Draw a strip of caution tape
-     x, y = top-left corner; w = width; h = height
-  ─────────────────────────────────────────────*/
-  function drawTape(x, y, w, h) {
-    if (w < 1 || h < 1) return;
-    ctx.save();
+      <div class="svc-item fu" style="transition-delay:.12s">
+        <div class="svc-num">02</div>
+        <div class="svc-body">
+          <div class="svc-name">Web Design</div>
+          <p class="svc-desc">Clean, fast websites built to represent your business and convert visitors into clients. No bloat, no templates — built from scratch to look the part and do the work.</p>
+        </div>
+      </div>
 
-    /* clip to tape rectangle */
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.clip();
+      <div class="svc-item fu" style="transition-delay:.24s">
+        <div class="svc-num">03</div>
+        <div class="svc-body">
+          <div class="svc-name">The Package Deal</div>
+          <p class="svc-desc">We come to you. We shoot your footage. We build your site around it. One team, one vision — video and website delivered together so every pixel matches the work.</p>
+        </div>
+      </div>
 
-    /* base yellow */
-    ctx.fillStyle = '#FFD700';
-    ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
+    </div>
+  </div>
+</section>
 
-    /* subtle diagonal grain */
-    ctx.strokeStyle = 'rgba(0,0,0,0.065)';
-    ctx.lineWidth = 19;
-    for (let sx = x - h * 2; sx < x + w + h * 2; sx += 36) {
-      ctx.beginPath();
-      ctx.moveTo(sx,       y);
-      ctx.lineTo(sx + h * 1.7, y + h);
-      ctx.stroke();
-    }
+<!-- ── SHOWREEL ── -->
+<section id="reel" class="section-rule">
+  <div class="wrap">
+    <p class="eyebrow fu">Our Reel</p>
+    <h2 class="sec-h fu">THE WORK</h2>
+  </div>
+  <div class="reel-frame" id="reelFrame">
+    <!-- Crossfade slideshow slides -->
+    <div class="slide slide-1 active">
+      <div class="slide-label">VIDEO PRODUCTION</div>
+      <div class="slide-sub">PROMO &nbsp;·&nbsp; ADVERTISING &nbsp;·&nbsp; BRANDED CONTENT</div>
+    </div>
+    <div class="slide slide-2">
+      <div class="slide-label">WEB DESIGN</div>
+      <div class="slide-sub">CUSTOM BUILDS &nbsp;·&nbsp; FAST &nbsp;·&nbsp; CONVERSION FOCUSED</div>
+    </div>
+    <div class="slide slide-3">
+      <div class="slide-label">PROMO &amp; ADVERTISING</div>
+      <div class="slide-sub">TELLING YOUR STORY &nbsp;·&nbsp; EVERY INDUSTRY</div>
+    </div>
+    <div class="slide slide-4">
+      <div class="slide-label">THE PACKAGE DEAL</div>
+      <div class="slide-sub">VIDEO + WEBSITE &nbsp;·&nbsp; ONE TEAM &nbsp;·&nbsp; ONE VISION</div>
+    </div>
 
-    /* horizontal divider lines */
-    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-    ctx.lineWidth = Math.max(1, h * 0.025);
-    [h * 0.27, h * 0.73].forEach(dy => {
-      ctx.beginPath();
-      ctx.moveTo(x,     y + dy);
-      ctx.lineTo(x + w, y + dy);
-      ctx.stroke();
-    });
+    <!-- Progress dots -->
+    <div class="reel-dots" id="reelDots">
+      <div class="dot on"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
 
-    /* text sizes */
-    const sf = clamp(h * 0.225, 7, 16);   /* small "CAUTION" */
-    const bf = clamp(h * 0.42,  12, 32);  /* big "CORCONCRETE" */
+    <!-- Placeholder (hidden when video is present) -->
+    <div class="reel-placeholder">
+      <div class="reel-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+      </div>
+      <p>Your reel goes here &mdash; drop in a video file to activate</p>
+    </div>
 
-    /* CAUTION — top band */
-    ctx.font = `bold ${sf}px "Arial Narrow",Arial,sans-serif`;
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
-    ctx.textBaseline = 'top';
-    const ct = 'CAUTION  ';
-    const cw = ctx.measureText(ct).width;
-    for (let tx = x - cw; tx < x + w + cw; tx += cw)
-      ctx.fillText(ct, tx, y + h * 0.04);
+    <!-- To add your reel: uncomment below and add your compiled video file -->
+    <!-- <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+      <source src="reel.mp4" type="video/mp4">
+    </video> -->
+  </div>
+  <div style="height:80px"></div>
+</section>
 
-    /* CAUTION — bottom band */
-    ctx.textBaseline = 'bottom';
-    for (let tx = x - cw; tx < x + w + cw; tx += cw)
-      ctx.fillText(ct, tx, y + h * 0.96);
+<!-- ── CONTACT ── -->
+<section id="contact" class="section-rule">
+  <div class="wrap">
+    <p class="eyebrow fu">Let&rsquo;s Work Together</p>
+    <h2 class="sec-h fu">CONTACT</h2>
+    <div class="contact-grid">
 
-    /* CORCONCRETE — center */
-    ctx.font = `bold ${bf}px "Arial Narrow",Arial,sans-serif`;
-    ctx.textBaseline = 'middle';
-    const bt = 'CORCONCRETE  ';
-    const bw = ctx.measureText(bt).width;
-    for (let tx = x - bw; tx < x + w + bw; tx += bw)
-      ctx.fillText(bt, tx, y + h * 0.5);
+      <div class="fl">
+        <p class="ci-head">Reach Out</p>
+        <div class="ci-row">
+          <div class="ci-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.63 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 5.55 5.55l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <a href="tel:8482264055">(848) 226-4055</a>
+        </div>
+        <div class="ci-row">
+          <div class="ci-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <a href="mailto:bluecollarmedianj@gmail.com">bluecollarmedianj@gmail.com</a>
+        </div>
+        <div class="ci-row">
+          <div class="ci-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </div>
+          <a href="https://instagram.com/bluecollarmedianj" target="_blank" rel="noopener">@bluecollarmedianj</a>
+        </div>
+      </div>
 
-    ctx.restore();
-  }
+      <form class="fu" action="mailto:bluecollarmedianj@gmail.com" method="POST" enctype="text/plain">
+        <div class="fg">
+          <label for="fname">Name</label>
+          <input type="text" id="fname" name="name" placeholder="Your name" required>
+        </div>
+        <div class="fg">
+          <label for="femail">Email</label>
+          <input type="email" id="femail" name="email" placeholder="your@email.com" required>
+        </div>
+        <div class="fg">
+          <label for="fmsg">Message</label>
+          <textarea id="fmsg" name="message" placeholder="Tell us about your project..." required></textarea>
+        </div>
+        <button type="submit" class="form-btn">Send Message</button>
+      </form>
 
-  /* ────────────────────────────────────────────
-     Draw text character-by-character along an arc
-  ─────────────────────────────────────────────*/
-  function drawArcText(cx, cy, r, text, startAngle, fontSize) {
-    ctx.save();
-    ctx.font = `bold ${fontSize}px "Arial Narrow",Arial,sans-serif`;
-    ctx.fillStyle = 'rgba(0,0,0,0.68)';
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'center';
+    </div>
+  </div>
+</section>
 
-    const tw   = ctx.measureText(text).width;
-    const reps = Math.ceil((2 * Math.PI * r) / tw) + 1;
-    const full = text.repeat(reps);
+<!-- ── FOOTER ── -->
+<footer>
+  <span>&copy; 2026 Blue Collar Media. All rights reserved.</span>
+  <a href="https://instagram.com/bluecollarmedianj" target="_blank" rel="noopener" aria-label="Instagram">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <rect x="2" y="2" width="20" height="20" rx="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    </svg>
+  </a>
+</footer>
 
-    let angle = startAngle;
-    for (const ch of full) {
-      const cw = ctx.measureText(ch).width;
-      const da = cw / r;
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(angle + da / 2);
-      ctx.fillText(ch, 0, -r);
-      ctx.restore();
-      angle += da;
-      if (angle >= startAngle + Math.PI * 2) break;
-    }
-    ctx.restore();
-  }
-
-  /* ────────────────────────────────────────────
-     Draw the roll face-on (flat face toward viewer)
-     so CORCONCRETE text is readable on each wound layer
-  ─────────────────────────────────────────────*/
-  function drawRollFace(cx, cy, R, rotAngle) {
-    if (R < 1) return;
-    ctx.save();
-
-    /* drop shadow */
-    ctx.shadowColor   = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur    = 28;
-    ctx.shadowOffsetX = 6;
-    ctx.shadowOffsetY = 12;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.fillStyle = '#555';
-    ctx.fill();
-    ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-
-    /* clip all inner drawing to the circle */
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.clip();
-
-    const coreR  = Math.max(5, R * 0.17);
-    const layerH = clamp(R * 0.08, 4, 12);
-
-    /* tape rings from core outward */
-    let r = coreR, i = 0;
-    while (r < R) {
-      const r2  = Math.min(r + layerH, R);
-      const mid = (r + r2) / 2;
-
-      /* yellow fill */
-      ctx.beginPath();
-      ctx.arc(cx, cy, r2, 0, Math.PI * 2);
-      ctx.arc(cx, cy, r,  0, Math.PI * 2, true);
-      ctx.fillStyle = i % 2 === 0 ? '#FFD700' : '#e6ae00';
-      ctx.fill();
-
-      /* ring edge */
-      ctx.beginPath();
-      ctx.arc(cx, cy, r2, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-
-      /* CORCONCRETE text wrapping this ring */
-      const fSize = clamp(layerH * 0.72, 4, 10);
-      if (layerH > 5.5) {
-        drawArcText(cx, cy, mid, 'CORCONCRETE  ', rotAngle - i * 1.1, fSize);
-      }
-
-      r = r2; i++;
-    }
-
-    /* cardboard core */
-    ctx.beginPath();
-    ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
-    ctx.fillStyle = '#b87b3e';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    /* centre hole */
-    ctx.beginPath();
-    ctx.arc(cx, cy, coreR * 0.38, 0, Math.PI * 2);
-    ctx.fillStyle = '#222';
-    ctx.fill();
-
-    ctx.restore();
-
-    /* outer rim */
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    /* tape-peel accent at 9 o'clock — where tape feeds in */
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, R + 1, Math.PI - 0.22, Math.PI + 0.22);
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = clamp(layerH * 0.85, 4, 11);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  /* ────────────────────────────────────────────
-     Main render loop
-  ─────────────────────────────────────────────*/
-  function draw() {
-    const W = cvs.width;
-    const H = cvs.height;
-    ctx.clearRect(0, 0, W, H);
-
-    const p  = prog;
-    const cy = H * 0.5;
-
-    /* responsive sizing */
-    const th   = clamp(H * 0.088, 40, 80);     /* tape height */
-    const Rmax = clamp(Math.min(W * 0.14, H * 0.21), 55, 148);
-    const Rmin = Rmax * 0.26;
-    const rcx  = W - Rmax - 38;                /* roll center X — fixed */
-
-    /* ── phase easing ── */
-    const t1 = ease(clamp(p / 0.30,         0, 1)); /* 0–30%   strips join    */
-    const t2 = ease(clamp((p - 0.30) / 0.20, 0, 1)); /* 30–50%  roll appears   */
-    const t3 = ease(clamp((p - 0.50) / 0.50, 0, 1)); /* 50–100% wind-up        */
-
-    /* gap between strips */
-    const maxGap = H * 0.11;
-    const gap    = lerp(maxGap, 0, t1);
-
-    /* roll radius: grows in two stages */
-    const R = t2 * Rmin + t3 * (Rmax - Rmin);
-
-    /* tape geometry */
-    const topY      = cy - th - gap;          /* top-left Y of upper strip   */
-    const botY      = cy + gap;               /* top-left Y of lower strip   */
-    const tapeRight = R > 0 ? rcx - R : W + 10; /* tape ends at roll surface */
-    const tapeLeft  = tapeRight * t3;         /* retreats rightward phase 3  */
-    const tapeW     = tapeRight - tapeLeft;
-
-    /* ── shadow pass (single rect for performance) ── */
-    if (tapeW > 4) {
-      ctx.save();
-      ctx.shadowColor   = 'rgba(0,0,0,0.45)';
-      ctx.shadowBlur    = 18;
-      ctx.shadowOffsetY = 9;
-      ctx.fillStyle     = '#FFD700';
-      ctx.fillRect(tapeLeft, topY, tapeW, th);
-      ctx.fillRect(tapeLeft, botY, tapeW, th);
-      ctx.restore();
-    }
-
-    /* ── tape strips ── */
-    drawTape(tapeLeft, topY, tapeW, th);
-    drawTape(tapeLeft, botY, tapeW, th);
-
-    /* ── roll face (spins as tape winds in) ── */
-    const rotAngle = t3 * Math.PI * 5;
-    if (R > 0.5) drawRollFace(rcx, cy, R, rotAngle);
-
-    /* ── phase label ── */
-    const phases = [
-      [0.00, 0.30, 'Coming Together'],
-      [0.30, 0.50, 'Roll Forming'],
-      [0.50, 1.00, 'Winding Up'],
-    ];
-    let phaseText = '';
-    for (const [lo, hi, name] of phases) {
-      if (p >= lo && p < hi) { phaseText = name; break; }
-    }
-    label.textContent = phaseText;
-  }
-
-  /* ── scroll driver ── */
-  window.addEventListener('scroll', () => {
-    const maxScroll = wrap.offsetHeight - window.innerHeight;
-    prog = clamp(window.scrollY / maxScroll, 0, 1);
-    if (!hintGone) { hint.style.opacity = '0'; hintGone = true; }
-  }, { passive: true });
-
-  window.addEventListener('resize', () => { resize(); draw(); });
-
-  function loop() { draw(); requestAnimationFrame(loop); }
-
-  resize();
-  loop();
-})();
-</script>
+<script src="script.js"></script>
 </body>
 </html>
