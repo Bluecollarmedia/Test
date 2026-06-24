@@ -521,6 +521,21 @@ document.querySelectorAll('.event').forEach(el => observer.observe(el));
       if(e.key==='Escape') closeLightbox();
     }
   });
+
+  // pause audio when scrolled out of view
+  var goodbyePlayer = document.getElementById('goodbye-player');
+  var goodbyeAudio  = document.getElementById('goodbye-audio');
+  var goodbyeBtn    = document.getElementById('goodbye-play');
+  if (goodbyePlayer) {
+    new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (!e.isIntersecting && goodbyeAudio && !goodbyeAudio.paused) {
+          goodbyeAudio.pause();
+          goodbyeBtn.textContent = '▶';
+        }
+      });
+    }, { threshold: 0 }).observe(goodbyePlayer);
+  }
 </script>
 </body>
 </html>
