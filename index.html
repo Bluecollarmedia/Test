@@ -3,376 +3,632 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CORCONCRETE</title>
+  <title>Reddit Downloader</title>
+  <meta name="description" content="Download images, GIFs, and videos from Reddit posts instantly — free, no login required.">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0d0d0d; overflow-x: hidden; }
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3250;
+      --orange: #ff4500;
+      --orange-dim: rgba(255, 69, 0, 0.15);
+      --text: #e8eaf0;
+      --muted: #8b8fa8;
+      --green: #46d39a;
+      --red: #ff6b6b;
+    }
 
-    #wrapper { height: 600vh; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    #stage {
-      position: sticky;
-      top: 0;
-      width: 100%;
-      height: 100vh;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 16px 64px;
+    }
+
+    /* ── header ── */
+    header {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo {
+      width: 48px; height: 48px;
+      background: var(--orange);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── search bar ── */
+    .search-wrap {
+      max-width: 760px;
+      margin: 0 auto 32px;
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 10px 10px 18px;
+      transition: border-color 0.2s;
+    }
+    .search-box:focus-within {
+      border-color: var(--orange);
+    }
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 15px;
+      min-width: 0;
+    }
+    .search-box input::placeholder { color: var(--muted); }
+    .btn {
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s, transform 0.1s;
+      user-select: none;
+    }
+    .btn:hover { opacity: 0.88; }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    /* ── status / error ── */
+    #status {
+      max-width: 760px;
+      margin: 0 auto 20px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+    .status-loading { color: var(--muted); }
+    .status-error   { color: var(--red); }
+
+    /* ── spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── result card ── */
+    #result {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
       overflow: hidden;
     }
 
-    #bg {
-      position: absolute;
-      width: 100%; height: 100%;
-      object-fit: cover;
-      object-position: center 38%;
-      filter: blur(5px) brightness(0.48) saturate(0.6);
-      transform: scale(1.07);
-      will-change: transform;
+    /* post meta */
+    .post-meta {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
     }
+    .post-meta .subreddit {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .post-meta h2 {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .post-stats {
+      display: flex;
+      gap: 18px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .post-stats span { display: flex; align-items: center; gap: 5px; }
 
-    canvas {
-      position: absolute;
-      inset: 0;
+    /* media items */
+    .media-list {
+      padding: 20px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .media-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .media-item .preview {
+      width: 100%;
+      max-height: 480px;
+      object-fit: contain;
+      background: #000;
       display: block;
     }
-
-    #hint {
-      position: fixed;
-      bottom: 38px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.65);
-      font: 300 11px/1 'Helvetica Neue', Arial, sans-serif;
-      letter-spacing: 5px;
+    .media-item video.preview {
+      max-height: 400px;
+      width: 100%;
+      background: #000;
+    }
+    .media-footer {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .media-label {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
       text-transform: uppercase;
-      transition: opacity 0.9s ease;
-      pointer-events: none;
+    }
+    .badge-image  { background: rgba(70,211,154,0.15); color: var(--green); }
+    .badge-video  { background: rgba(255,69,0,0.15);   color: var(--orange); }
+    .badge-gif    { background: rgba(130,160,255,0.15); color: #82a0ff; }
+
+    .dl-btn {
+      background: var(--orange-dim);
+      color: var(--orange);
+      border: 1px solid rgba(255,69,0,0.3);
+      border-radius: 8px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .dl-btn:hover  { background: rgba(255,69,0,0.28); }
+    .dl-btn:active { transform: scale(0.96); }
+    .dl-btn.loading { opacity: 0.6; pointer-events: none; }
+    .dl-btn.done    { background: rgba(70,211,154,0.15); color: var(--green); border-color: rgba(70,211,154,0.3); }
+
+    /* note for videos */
+    .video-note {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 0 16px 12px;
+      line-height: 1.5;
+    }
+
+    /* no media */
+    .no-media {
+      padding: 32px 24px;
       text-align: center;
-    }
-    #hint .arr {
-      display: block;
-      margin-top: 10px;
-      font-size: 18px;
-      animation: bob 1.5s ease-in-out infinite;
-    }
-    @keyframes bob {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(8px); }
+      color: var(--muted);
+      font-size: 14px;
     }
 
-    #phase-label {
-      position: fixed;
-      top: 32px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.5);
-      font: 300 11px/1 'Helvetica Neue', Arial, sans-serif;
-      letter-spacing: 4px;
+    /* gallery count badge */
+    .gallery-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── how-to ── */
+    .howto {
+      max-width: 760px;
+      margin: 40px auto 0;
+    }
+    .howto h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
       text-transform: uppercase;
-      transition: opacity 0.4s;
-      pointer-events: none;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      background: var(--orange-dim);
+      color: var(--orange);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .step h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .step p  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── footer ── */
+    footer {
+      max-width: 760px;
+      margin: 56px auto 0;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+    footer a { color: var(--orange); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      .search-box { padding: 8px 8px 8px 14px; }
+      .btn { padding: 9px 16px; font-size: 13px; }
+      .post-meta, .media-list { padding-left: 16px; padding-right: 16px; }
     }
   </style>
 </head>
 <body>
 
-<div id="wrapper">
-  <div id="stage">
-    <img id="bg" src="bg.jpg" alt="CORCONCRETE construction site">
-    <canvas id="c"></canvas>
+<header>
+  <div class="logo">⬇</div>
+  <div>
+    <h1>Reddit Downloader</h1>
+    <p>Download images, GIFs &amp; videos from any public Reddit post</p>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <input
+      type="url"
+      id="urlInput"
+      placeholder="Paste a Reddit post URL…"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+    >
+    <button class="btn" id="fetchBtn" onclick="handleFetch()">Download</button>
   </div>
 </div>
 
-<div id="hint">Scroll<span class="arr">↓</span></div>
-<div id="phase-label" id="phase-label"></div>
+<div id="status"></div>
+<div id="result"></div>
+
+<div class="howto" id="howto">
+  <h3>How it works</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Copy the URL</h4>
+      <p>Open any Reddit post and copy its URL from the address bar or share menu.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>Paste &amp; fetch</h4>
+      <p>Paste the URL above and tap Download. Works with posts, photos, GIFs, and videos.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Save your media</h4>
+      <p>Preview each file, then tap the download button to save it to your device.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Reddit Downloader &mdash; free, open source, no login required.</p>
+  <p style="margin-top:6px">Media belongs to its original creators. Please respect Reddit's <a href="https://www.reddit.com/wiki/contentpolicy" target="_blank" rel="noopener">Content Policy</a>.</p>
+</footer>
 
 <script>
 (() => {
-  const cvs   = document.getElementById('c');
-  const ctx   = cvs.getContext('2d');
-  const wrap  = document.getElementById('wrapper');
-  const hint  = document.getElementById('hint');
-  const label = document.getElementById('phase-label');
+  const input   = document.getElementById('urlInput');
+  const statusEl = document.getElementById('status');
+  const resultEl = document.getElementById('result');
+  const howto    = document.getElementById('howto');
+  const fetchBtn = document.getElementById('fetchBtn');
 
-  let prog = 0;
-  let hintGone = false;
+  /* Allow Enter key */
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleFetch();
+  });
 
-  /* ── utils ── */
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const lerp  = (a, b, t) => a + (b - a) * t;
-  const ease  = t => { t = clamp(t,0,1); return t<.5 ? 4*t**3 : 1-(-2*t+2)**3/2; };
+  window.handleFetch = async function() {
+    const raw = input.value.trim();
+    if (!raw) { setStatus('error', 'Please paste a Reddit post URL first.'); return; }
 
-  /* ── resize ── */
-  function resize() {
-    cvs.width  = window.innerWidth;
-    cvs.height = window.innerHeight;
+    const apiUrl = buildApiUrl(raw);
+    if (!apiUrl) { setStatus('error', 'That doesn\'t look like a Reddit URL. Try pasting the full post link.'); return; }
+
+    fetchBtn.disabled = true;
+    resultEl.innerHTML = '';
+    howto.style.display = 'none';
+    setStatus('loading', 'Fetching post data…');
+
+    try {
+      const res = await fetch(apiUrl, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error(`Reddit returned ${res.status}. The post may be private or deleted.`);
+      const json = await res.json();
+      const post = json[0]?.data?.children?.[0]?.data;
+      if (!post) throw new Error('Unexpected response from Reddit. Try again.');
+      renderPost(post);
+      setStatus('', '');
+    } catch (err) {
+      setStatus('error', err.message || 'Something went wrong. Check the URL and try again.');
+      howto.style.display = '';
+    } finally {
+      fetchBtn.disabled = false;
+    }
+  };
+
+  /* ── URL helpers ── */
+  function buildApiUrl(url) {
+    try {
+      const u = new URL(url.includes('://') ? url : 'https://' + url);
+      if (!u.hostname.match(/(^|\.)reddit\.com$/)) return null;
+      let path = u.pathname.replace(/\/$/, '');
+      return `https://www.reddit.com${path}.json?raw_json=1`;
+    } catch { return null; }
   }
 
-  /* ────────────────────────────────────────────
-     Draw a strip of caution tape
-     x, y = top-left corner; w = width; h = height
-  ─────────────────────────────────────────────*/
-  function drawTape(x, y, w, h) {
-    if (w < 1 || h < 1) return;
-    ctx.save();
+  /* ── Render ── */
+  function renderPost(post) {
+    const mediaItems = extractMedia(post);
+    const isGallery  = post.is_gallery && mediaItems.length > 1;
 
-    /* clip to tape rectangle */
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.clip();
+    const metaHtml = `
+      <div class="post-meta">
+        <div class="subreddit">r/${esc(post.subreddit)}</div>
+        <h2>${esc(post.title)}</h2>
+        <div class="post-stats">
+          <span>⬆ ${fmt(post.score)}</span>
+          <span>💬 ${fmt(post.num_comments)} comments</span>
+          <span>👤 u/${esc(post.author)}</span>
+        </div>
+      </div>`;
 
-    /* base yellow */
-    ctx.fillStyle = '#FFD700';
-    ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
-
-    /* subtle diagonal grain */
-    ctx.strokeStyle = 'rgba(0,0,0,0.065)';
-    ctx.lineWidth = 19;
-    for (let sx = x - h * 2; sx < x + w + h * 2; sx += 36) {
-      ctx.beginPath();
-      ctx.moveTo(sx,       y);
-      ctx.lineTo(sx + h * 1.7, y + h);
-      ctx.stroke();
+    if (!mediaItems.length) {
+      resultEl.innerHTML = `<div class="card">${metaHtml}<div class="no-media">No downloadable media found in this post. It may be a text post, link, or unsupported embed.</div></div>`;
+      return;
     }
 
-    /* horizontal divider lines */
-    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-    ctx.lineWidth = Math.max(1, h * 0.025);
-    [h * 0.27, h * 0.73].forEach(dy => {
-      ctx.beginPath();
-      ctx.moveTo(x,     y + dy);
-      ctx.lineTo(x + w, y + dy);
-      ctx.stroke();
-    });
+    const galleryBadge = isGallery
+      ? `<div style="padding:12px 24px 0"><span class="gallery-badge">🖼 Gallery &mdash; ${mediaItems.length} items</span></div>`
+      : '';
 
-    /* text sizes */
-    const sf = clamp(h * 0.225, 7, 16);   /* small "CAUTION" */
-    const bf = clamp(h * 0.42,  12, 32);  /* big "CORCONCRETE" */
+    const itemsHtml = mediaItems.map((item, i) => buildItemHtml(item, i)).join('');
 
-    /* CAUTION — top band */
-    ctx.font = `bold ${sf}px "Arial Narrow",Arial,sans-serif`;
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
-    ctx.textBaseline = 'top';
-    const ct = 'CAUTION  ';
-    const cw = ctx.measureText(ct).width;
-    for (let tx = x - cw; tx < x + w + cw; tx += cw)
-      ctx.fillText(ct, tx, y + h * 0.04);
-
-    /* CAUTION — bottom band */
-    ctx.textBaseline = 'bottom';
-    for (let tx = x - cw; tx < x + w + cw; tx += cw)
-      ctx.fillText(ct, tx, y + h * 0.96);
-
-    /* CORCONCRETE — center */
-    ctx.font = `bold ${bf}px "Arial Narrow",Arial,sans-serif`;
-    ctx.textBaseline = 'middle';
-    const bt = 'CORCONCRETE  ';
-    const bw = ctx.measureText(bt).width;
-    for (let tx = x - bw; tx < x + w + bw; tx += bw)
-      ctx.fillText(bt, tx, y + h * 0.5);
-
-    ctx.restore();
+    resultEl.innerHTML = `<div class="card">${metaHtml}${galleryBadge}<div class="media-list">${itemsHtml}</div></div>`;
   }
 
-  /* ────────────────────────────────────────────
-     Draw text character-by-character along an arc
-  ─────────────────────────────────────────────*/
-  function drawArcText(cx, cy, r, text, startAngle, fontSize) {
-    ctx.save();
-    ctx.font = `bold ${fontSize}px "Arial Narrow",Arial,sans-serif`;
-    ctx.fillStyle = 'rgba(0,0,0,0.68)';
-    ctx.textBaseline = 'middle';
-    ctx.textAlign = 'center';
+  function buildItemHtml(item, idx) {
+    const label = item.type === 'video' ? 'video' : item.type === 'gif' ? 'gif' : 'image';
+    const badgeClass = `badge-${label}`;
+    const icon = label === 'video' ? '▶' : label === 'gif' ? '◉' : '🖼';
 
-    const tw   = ctx.measureText(text).width;
-    const reps = Math.ceil((2 * Math.PI * r) / tw) + 1;
-    const full = text.repeat(reps);
+    const previewHtml = item.type === 'video'
+      ? `<video class="preview" src="${esc(item.url)}" controls muted playsinline preload="metadata"></video>`
+      : `<img class="preview" src="${esc(item.url)}" alt="Media ${idx + 1}" loading="lazy">`;
 
-    let angle = startAngle;
-    for (const ch of full) {
-      const cw = ctx.measureText(ch).width;
-      const da = cw / r;
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(angle + da / 2);
-      ctx.fillText(ch, 0, -r);
-      ctx.restore();
-      angle += da;
-      if (angle >= startAngle + Math.PI * 2) break;
-    }
-    ctx.restore();
+    const note = item.type === 'video'
+      ? `<div class="video-note">⚠ Reddit videos and audio are stored separately. This download contains video only. For audio, use a tool like <em>ffmpeg</em> after downloading both streams.</div>`
+      : '';
+
+    const filename = item.filename || `reddit-media-${idx + 1}.${item.ext || 'jpg'}`;
+
+    return `
+      <div class="media-item">
+        ${previewHtml}
+        ${note}
+        <div class="media-footer">
+          <span class="media-label">
+            <span class="badge ${badgeClass}">${icon} ${label.toUpperCase()}</span>
+            ${item.dim ? `<span>${item.dim}</span>` : ''}
+          </span>
+          <button
+            class="dl-btn"
+            onclick="downloadMedia(this, '${esc(item.url)}', '${esc(filename)}')"
+          >⬇ Save ${label}</button>
+        </div>
+      </div>`;
   }
 
-  /* ────────────────────────────────────────────
-     Draw the roll face-on (flat face toward viewer)
-     so CORCONCRETE text is readable on each wound layer
-  ─────────────────────────────────────────────*/
-  function drawRollFace(cx, cy, R, rotAngle) {
-    if (R < 1) return;
-    ctx.save();
+  /* ── Media extraction ── */
+  function extractMedia(post) {
+    const items = [];
 
-    /* drop shadow */
-    ctx.shadowColor   = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur    = 28;
-    ctx.shadowOffsetX = 6;
-    ctx.shadowOffsetY = 12;
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.fillStyle = '#555';
-    ctx.fill();
-    ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
-
-    /* clip all inner drawing to the circle */
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.clip();
-
-    const coreR  = Math.max(5, R * 0.17);
-    const layerH = clamp(R * 0.08, 4, 12);
-
-    /* tape rings from core outward */
-    let r = coreR, i = 0;
-    while (r < R) {
-      const r2  = Math.min(r + layerH, R);
-      const mid = (r + r2) / 2;
-
-      /* yellow fill */
-      ctx.beginPath();
-      ctx.arc(cx, cy, r2, 0, Math.PI * 2);
-      ctx.arc(cx, cy, r,  0, Math.PI * 2, true);
-      ctx.fillStyle = i % 2 === 0 ? '#FFD700' : '#e6ae00';
-      ctx.fill();
-
-      /* ring edge */
-      ctx.beginPath();
-      ctx.arc(cx, cy, r2, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-
-      /* CORCONCRETE text wrapping this ring */
-      const fSize = clamp(layerH * 0.72, 4, 10);
-      if (layerH > 5.5) {
-        drawArcText(cx, cy, mid, 'CORCONCRETE  ', rotAngle - i * 1.1, fSize);
+    /* Gallery */
+    if (post.is_gallery && post.media_metadata && post.gallery_data?.items) {
+      for (const entry of post.gallery_data.items) {
+        const meta = post.media_metadata[entry.media_id];
+        if (!meta || meta.status !== 'valid') continue;
+        const isGif = meta.e === 'AnimatedImage';
+        const src   = meta.s?.u || meta.s?.gif || meta.s?.mp4;
+        if (!src) continue;
+        const url  = src.replace(/&amp;/g, '&');
+        const ext  = isGif ? 'gif' : extFromUrl(url);
+        items.push({
+          type: isGif ? 'gif' : 'image',
+          url,
+          ext,
+          dim: meta.s?.x && meta.s?.y ? `${meta.s.x}×${meta.s.y}` : null,
+          filename: `reddit-${entry.media_id}.${ext}`,
+        });
       }
-
-      r = r2; i++;
+      return items;
     }
 
-    /* cardboard core */
-    ctx.beginPath();
-    ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
-    ctx.fillStyle = '#b87b3e';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    /* Hosted video (v.redd.it) */
+    if (post.media?.reddit_video) {
+      const vid = post.media.reddit_video;
+      const url = (vid.fallback_url || vid.hls_url || '').replace(/&amp;/g, '&');
+      if (url) {
+        items.push({
+          type: 'video',
+          url,
+          ext: 'mp4',
+          dim: vid.width && vid.height ? `${vid.width}×${vid.height}` : null,
+          filename: `reddit-video.mp4`,
+        });
+        return items;
+      }
+    }
 
-    /* centre hole */
-    ctx.beginPath();
-    ctx.arc(cx, cy, coreR * 0.38, 0, Math.PI * 2);
-    ctx.fillStyle = '#222';
-    ctx.fill();
+    /* Crosspost that has video */
+    const crossVideo = post.crosspost_parent_list?.[0]?.media?.reddit_video;
+    if (crossVideo) {
+      const url = (crossVideo.fallback_url || '').replace(/&amp;/g, '&');
+      if (url) {
+        items.push({ type: 'video', url, ext: 'mp4', dim: crossVideo.width && crossVideo.height ? `${crossVideo.width}×${crossVideo.height}` : null, filename: 'reddit-video.mp4' });
+        return items;
+      }
+    }
 
-    ctx.restore();
+    /* Single image */
+    if (post.post_hint === 'image' || /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(post.url || '')) {
+      const url = (post.url || '').replace(/&amp;/g, '&');
+      const ext = extFromUrl(url) || 'jpg';
+      const isGif = ext === 'gif' || post.url?.includes('.gif');
+      if (url) {
+        const preview = post.preview?.images?.[0];
+        const dim = preview?.source ? `${preview.source.width}×${preview.source.height}` : null;
+        items.push({ type: isGif ? 'gif' : 'image', url, ext, dim, filename: `reddit-image.${ext}` });
+        return items;
+      }
+    }
 
-    /* outer rim */
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(0,0,0,0.55)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    /* Preview images fallback */
+    if (post.preview?.images?.length) {
+      for (const img of post.preview.images) {
+        /* animated gif stored as mp4 preview */
+        if (img.variants?.gif?.source?.url) {
+          const url = img.variants.gif.source.url.replace(/&amp;/g, '&');
+          items.push({ type: 'gif', url, ext: 'gif', dim: `${img.variants.gif.source.width}×${img.variants.gif.source.height}`, filename: 'reddit-image.gif' });
+          continue;
+        }
+        const url = img.source?.url?.replace(/&amp;/g, '&');
+        if (url) {
+          items.push({ type: 'image', url, ext: extFromUrl(url) || 'jpg', dim: img.source?.width && img.source?.height ? `${img.source.width}×${img.source.height}` : null, filename: 'reddit-image.jpg' });
+        }
+      }
+    }
 
-    /* tape-peel accent at 9 o'clock — where tape feeds in */
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, R + 1, Math.PI - 0.22, Math.PI + 0.22);
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = clamp(layerH * 0.85, 4, 11);
-    ctx.stroke();
-    ctx.restore();
+    return items;
   }
 
-  /* ────────────────────────────────────────────
-     Main render loop
-  ─────────────────────────────────────────────*/
-  function draw() {
-    const W = cvs.width;
-    const H = cvs.height;
-    ctx.clearRect(0, 0, W, H);
-
-    const p  = prog;
-    const cy = H * 0.5;
-
-    /* responsive sizing */
-    const th   = clamp(H * 0.088, 40, 80);     /* tape height */
-    const Rmax = clamp(Math.min(W * 0.14, H * 0.21), 55, 148);
-    const Rmin = Rmax * 0.26;
-    const rcx  = W - Rmax - 38;                /* roll center X — fixed */
-
-    /* ── phase easing ── */
-    const t1 = ease(clamp(p / 0.30,         0, 1)); /* 0–30%   strips join    */
-    const t2 = ease(clamp((p - 0.30) / 0.20, 0, 1)); /* 30–50%  roll appears   */
-    const t3 = ease(clamp((p - 0.50) / 0.50, 0, 1)); /* 50–100% wind-up        */
-
-    /* gap between strips */
-    const maxGap = H * 0.11;
-    const gap    = lerp(maxGap, 0, t1);
-
-    /* roll radius: grows in two stages */
-    const R = t2 * Rmin + t3 * (Rmax - Rmin);
-
-    /* tape geometry */
-    const topY      = cy - th - gap;          /* top-left Y of upper strip   */
-    const botY      = cy + gap;               /* top-left Y of lower strip   */
-    const tapeRight = R > 0 ? rcx - R : W + 10; /* tape ends at roll surface */
-    const tapeLeft  = tapeRight * t3;         /* retreats rightward phase 3  */
-    const tapeW     = tapeRight - tapeLeft;
-
-    /* ── shadow pass (single rect for performance) ── */
-    if (tapeW > 4) {
-      ctx.save();
-      ctx.shadowColor   = 'rgba(0,0,0,0.45)';
-      ctx.shadowBlur    = 18;
-      ctx.shadowOffsetY = 9;
-      ctx.fillStyle     = '#FFD700';
-      ctx.fillRect(tapeLeft, topY, tapeW, th);
-      ctx.fillRect(tapeLeft, botY, tapeW, th);
-      ctx.restore();
+  /* ── Download ── */
+  window.downloadMedia = async function(btn, url, filename) {
+    btn.classList.add('loading');
+    btn.textContent = '⏳ Downloading…';
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Fetch failed');
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000);
+      btn.classList.remove('loading');
+      btn.classList.add('done');
+      btn.textContent = '✓ Saved!';
+      setTimeout(() => {
+        btn.classList.remove('done');
+        btn.textContent = '⬇ Save ' + (filename.endsWith('.mp4') ? 'video' : filename.endsWith('.gif') ? 'gif' : 'image');
+      }, 3000);
+    } catch {
+      /* CORS fallback: open in new tab */
+      btn.classList.remove('loading');
+      btn.textContent = '⬇ Open & Save';
+      window.open(url, '_blank', 'noopener');
     }
+  };
 
-    /* ── tape strips ── */
-    drawTape(tapeLeft, topY, tapeW, th);
-    drawTape(tapeLeft, botY, tapeW, th);
-
-    /* ── roll face (spins as tape winds in) ── */
-    const rotAngle = t3 * Math.PI * 5;
-    if (R > 0.5) drawRollFace(rcx, cy, R, rotAngle);
-
-    /* ── phase label ── */
-    const phases = [
-      [0.00, 0.30, 'Coming Together'],
-      [0.30, 0.50, 'Roll Forming'],
-      [0.50, 1.00, 'Winding Up'],
-    ];
-    let phaseText = '';
-    for (const [lo, hi, name] of phases) {
-      if (p >= lo && p < hi) { phaseText = name; break; }
+  /* ── Helpers ── */
+  function setStatus(type, msg) {
+    if (!type || !msg) { statusEl.innerHTML = ''; return; }
+    if (type === 'loading') {
+      statusEl.innerHTML = `<span class="status-loading"><span class="spinner"></span>${esc(msg)}</span>`;
+    } else {
+      statusEl.innerHTML = `<span class="status-error">⚠ ${esc(msg)}</span>`;
     }
-    label.textContent = phaseText;
   }
 
-  /* ── scroll driver ── */
-  window.addEventListener('scroll', () => {
-    const maxScroll = wrap.offsetHeight - window.innerHeight;
-    prog = clamp(window.scrollY / maxScroll, 0, 1);
-    if (!hintGone) { hint.style.opacity = '0'; hintGone = true; }
-  }, { passive: true });
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
 
-  window.addEventListener('resize', () => { resize(); draw(); });
+  function fmt(n) {
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    return String(n ?? 0);
+  }
 
-  function loop() { draw(); requestAnimationFrame(loop); }
-
-  resize();
-  loop();
+  function extFromUrl(url) {
+    try {
+      const path = new URL(url).pathname;
+      const m = path.match(/\.([a-z0-9]+)$/i);
+      return m ? m[1].toLowerCase() : null;
+    } catch { return null; }
+  }
 })();
 </script>
 </body>
