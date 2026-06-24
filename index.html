@@ -249,6 +249,63 @@
     .event-body { padding-left: 20px; }
     h1 { font-size: 42px; }
   }
+
+  /* ── audio player ── */
+  .audio-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(201,168,76,0.07);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 2px;
+  }
+  .ap-btn {
+    background: none;
+    border: 1px solid #c9a84c;
+    color: #c9a84c;
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ap-time, .ap-dur {
+    font-family: "DM Mono", monospace;
+    font-size: 10px;
+    color: rgba(201,168,76,0.6);
+    flex-shrink: 0;
+    min-width: 28px;
+  }
+  .ap-seek {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 2px;
+    background: rgba(201,168,76,0.2);
+    outline: none;
+    cursor: pointer;
+  }
+  .ap-seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    background: #c9a84c;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .ap-seek::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    background: #c9a84c;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -312,7 +369,15 @@
     <div class="event"><div class="event-date"><span class="month">Jul</span><span class="day">17</span><span class="year">2025</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Shmuel loses service, goes to David's house for WiFi</li><li>David added to the Lachatz Chat</li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Jul</span><span class="day">22</span><span class="year">2025</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Baila goes through Shmuel's phone <span class="tag tag-drama">drama</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Aug</span><span class="day">13</span><span class="year">2025</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Bike4Chai — everyone comes to the bedroom</li><li>Chana · Tova · Dassa · Baila</li></ul></div></div></div>
-    <div class="event"><div class="event-date"><span class="month">Aug</span><span class="day">31</span><span class="year">2025</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Lachatz Chat officially closes <span class="tag tag-drama">over</span></li><li>Everything is considered officially over</li></ul></div></div></div>
+    <div class="event"><div class="event-date"><span class="month">Aug</span><span class="day">31</span><span class="year">2025</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Lachatz Chat officially closes <span class="tag tag-drama">over</span></li><li>Everything is considered officially over</li></ul>
+<div class="audio-player" id="goodbye-player">
+  <audio id="goodbye-audio" src="audio/goodbye.mp3" preload="metadata"></audio>
+  <button class="ap-btn" id="goodbye-play" onclick="(function(){var a=document.getElementById('goodbye-audio'),b=document.getElementById('goodbye-play');a.paused?(a.play(),b.textContent='▐▐'):(a.pause(),b.textContent='▶')})()" aria-label="Play">▶</button>
+  <span class="ap-time" id="goodbye-time">0:00</span>
+  <input class="ap-seek" id="goodbye-seek" type="range" min="0" max="100" value="0" step="0.1" oninput="document.getElementById('goodbye-audio').currentTime=this.value*document.getElementById('goodbye-audio').duration/100">
+  <span class="ap-dur" id="goodbye-dur">—</span>
+</div>
+<ul class="event-items" style="display:none"></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Sep</span><span class="day">8</span><span class="year">2025</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Baila Gmail video calls <span class="tag tag-chaos">gmail??</span></li></ul></div></div></div>
   </div>
 </section>
@@ -386,6 +451,24 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('.event').forEach(el => observer.observe(el));
+
+  // audio player sync
+  (function() {
+    var audio = document.getElementById('goodbye-audio');
+    var seek  = document.getElementById('goodbye-seek');
+    var time  = document.getElementById('goodbye-time');
+    var dur   = document.getElementById('goodbye-dur');
+    var btn   = document.getElementById('goodbye-play');
+    function fmt(s) { s=Math.floor(s||0); return Math.floor(s/60)+':'+('0'+s%60).slice(-2); }
+    audio.addEventListener('loadedmetadata', function(){ dur.textContent = fmt(audio.duration); });
+    audio.addEventListener('timeupdate', function(){
+      time.textContent = fmt(audio.currentTime);
+      if (!seek._dragging) seek.value = audio.duration ? (audio.currentTime/audio.duration*100) : 0;
+    });
+    audio.addEventListener('ended', function(){ btn.textContent = '▶'; seek.value = 0; });
+    seek.addEventListener('mousedown', function(){ seek._dragging = true; });
+    seek.addEventListener('mouseup',   function(){ seek._dragging = false; });
+  })();
 </script>
 </body>
 </html>
