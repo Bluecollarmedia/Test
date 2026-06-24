@@ -404,11 +404,9 @@
     setStatus('loading', 'Fetching post data…');
 
     try {
-      const res = await fetch(apiUrl, { headers: { 'Accept': 'application/json' } });
-      if (!res.ok) throw new Error(`Reddit returned ${res.status}. The post may be private or deleted.`);
-      const json = await res.json();
+      const json = await fetchWithFallback(apiUrl);
       const post = json[0]?.data?.children?.[0]?.data;
-      if (!post) throw new Error('Unexpected response from Reddit. Try again.');
+      if (!post) throw new Error('Unexpected response from Reddit. The post may have been deleted.');
       renderPost(post);
       setStatus('', '');
     } catch (err) {
@@ -419,12 +417,38 @@
     }
   };
 
+  /* Try Reddit directly, then fall back to a CORS proxy */
+  async function fetchWithFallback(apiUrl) {
+    const opts = { credentials: 'omit', headers: { 'Accept': 'application/json' } };
+
+    /* attempt 1 — direct */
+    try {
+      const res = await fetch(apiUrl, opts);
+      if (res.ok) {
+        const text = await res.text();
+        if (!text.trim().startsWith('<')) return JSON.parse(text);
+      }
+    } catch (_) { /* fall through */ }
+
+    /* attempt 2 — CORS proxy */
+    setStatus('loading', 'Retrying via proxy…');
+    const proxy = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+    const res2 = await fetch(proxy, opts);
+    if (!res2.ok) throw new Error(`Reddit returned ${res2.status}. The post may be private or deleted.`);
+    const text2 = await res2.text();
+    if (text2.trim().startsWith('<')) throw new Error('Reddit redirected to a login page. Make sure the post is public.');
+    return JSON.parse(text2);
+  }
+
   /* ── URL helpers ── */
   function buildApiUrl(url) {
     try {
       const u = new URL(url.includes('://') ? url : 'https://' + url);
-      if (!u.hostname.match(/(^|\.)reddit\.com$/)) return null;
-      let path = u.pathname.replace(/\/$/, '');
+      /* accept reddit.com and redd.it short links */
+      const isReddit = u.hostname.match(/(^|\.)reddit\.com$/) || u.hostname.match(/(^|\.)redd\.it$/);
+      if (!isReddit) return null;
+      let path = u.pathname.replace(/\/$/, '').replace(/\.json$/, '');
+      /* For share URLs like /r/sub/s/abc, resolve via www.reddit.com */
       return `https://www.reddit.com${path}.json?raw_json=1`;
     } catch { return null; }
   }
