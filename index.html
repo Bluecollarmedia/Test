@@ -306,11 +306,38 @@
     border-radius: 50%;
     cursor: pointer;
   }
+
+  .see-photos-btn {
+    display: inline-block;
+    margin-top: 10px;
+    background: none;
+    border: 1px solid rgba(201,168,76,0.35);
+    color: rgba(201,168,76,0.7);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .see-photos-btn:hover { border-color: #c9a84c; color: #c9a84c; }
 </style>
 </head>
 <body>
 
 <!-- POPUP -->
+<!-- LIGHTBOX -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:9998;flex-direction:column;align-items:center;justify-content:center;">
+  <button onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:2px;">✕</button>
+  <img id="lb-img" src="" style="max-width:90vw;max-height:80vh;object-fit:contain;display:block;">
+  <div style="display:flex;align-items:center;gap:32px;margin-top:18px;">
+    <button onclick="lbNav(-1)" style="background:none;border:none;color:#c9a84c;font-size:20px;cursor:pointer;padding:8px;">‹</button>
+    <span id="lb-count" style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.35);">1 / 3</span>
+    <button onclick="lbNav(1)" style="background:none;border:none;color:#c9a84c;font-size:20px;cursor:pointer;padding:8px;">›</button>
+  </div>
+</div>
+
+
 <div id="popup-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;">
   <div style="background:#12100a;border:1px solid #c9a84c;padding:48px 40px;max-width:380px;width:90%;text-align:center;font-family:'Playfair Display',serif;">
     <p style="color:#f0e6c8;font-size:22px;letter-spacing:2px;margin-bottom:32px;">baila get away</p>
@@ -392,7 +419,7 @@
     <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">27</span><span class="year">2026</span><span class="time">1:34 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Chana is added to the chat <span class="tag tag-milestone">finally</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">27</span><span class="year">2026</span><span class="time">10:00 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>David, Baila, and Shmuel go ice skating then to the park</li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">29</span><span class="year">2026</span><span class="time">3:00 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Dassa, David, Shmuel, Chana, Baila go to Crystal Lake</li><li>Bonfire made <span class="tag tag-sweet">🔥 3am</span></li></ul></div></div></div>
-    <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">29</span><span class="year">2026</span><span class="time">10:00 PM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>T-shirt painting night with David, Chana, Shmuel, and Baila</li></ul></div></div></div>
+    <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">29</span><span class="year">2026</span><span class="time">10:00 PM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>T-shirt painting night with David, Chana, Shmuel, and Baila</li></ul><button class="see-photos-btn" onclick="openLightbox(0)">see photos</button><ul class="event-items" style="display:none"></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Apr</span><span class="day">1</span><span class="year">2026</span><span class="time">3:31 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Chemistry joke between David and Chana begins <span class="tag tag-sweet">spark</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Apr</span><span class="day">4</span><span class="year">2026</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>David realizes he likes Chana <span class="tag tag-milestone">realization</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Apr</span><span class="day">6</span><span class="year">2026</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>David puts his arm around Chana in the Airbnb</li></ul></div></div></div>
@@ -469,6 +496,31 @@ document.querySelectorAll('.event').forEach(el => observer.observe(el));
     seek.addEventListener('mousedown', function(){ seek._dragging = true; });
     seek.addEventListener('mouseup',   function(){ seek._dragging = false; });
   })();
+
+  // lightbox
+  var lbPhotos = ['photos/tshirt/1.jpg','photos/tshirt/2.jpg','photos/tshirt/3.jpg'];
+  var lbIndex = 0;
+  function openLightbox(i) {
+    lbIndex = i;
+    var lb = document.getElementById('lightbox');
+    lb.style.display = 'flex';
+    document.getElementById('lb-img').src = lbPhotos[lbIndex];
+    document.getElementById('lb-count').textContent = (lbIndex+1) + ' / ' + lbPhotos.length;
+  }
+  function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
+  function lbNav(dir) {
+    lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+    document.getElementById('lb-img').src = lbPhotos[lbIndex];
+    document.getElementById('lb-count').textContent = (lbIndex+1) + ' / ' + lbPhotos.length;
+  }
+  document.getElementById('lightbox').addEventListener('click', function(e){ if(e.target===this) closeLightbox(); });
+  document.addEventListener('keydown', function(e){ 
+    if(document.getElementById('lightbox').style.display==='flex') {
+      if(e.key==='ArrowRight') lbNav(1);
+      if(e.key==='ArrowLeft') lbNav(-1);
+      if(e.key==='Escape') closeLightbox();
+    }
+  });
 </script>
 </body>
 </html>
