@@ -321,6 +321,45 @@
     transition: border-color 0.2s, color 0.2s;
   }
   .see-photos-btn:hover { border-color: #c9a84c; color: #c9a84c; }
+
+  /* lightbox animations */
+  @keyframes lbFadeIn  { from { opacity:0 } to { opacity:1 } }
+  @keyframes lbSlideUp { from { opacity:0; transform:scale(0.92) translateY(16px) } to { opacity:1; transform:scale(1) translateY(0) } }
+  @keyframes lbImgFade { from { opacity:0; transform:scale(0.97) } to { opacity:1; transform:scale(1) } }
+  @keyframes spinClose { from { transform:rotate(0deg) } to { transform:rotate(90deg) } }
+
+  #lightbox.lb-open { animation: lbFadeIn 0.25s ease forwards; }
+  #lb-inner         { animation: lbSlideUp 0.3s cubic-bezier(0.22,1,0.36,1) forwards; }
+  #lb-img.lb-img-anim { animation: lbImgFade 0.25s ease forwards; }
+
+  #lb-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 52px; height: 52px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 50%;
+    color: #c9a84c;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s, transform 0.3s;
+  }
+  #lb-close:hover { background: rgba(201,168,76,0.18); border-color: #c9a84c; transform: rotate(90deg); }
+
+  .lb-nav {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.35);
+    color: #c9a84c;
+    font-size: 36px;
+    cursor: pointer;
+    padding: 16px 28px;
+    line-height: 1;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    border-radius: 2px;
+  }
+  .lb-nav:hover { background: rgba(201,168,76,0.2); border-color: #c9a84c; transform: scale(1.1); }
+  .lb-nav:active { transform: scale(0.95); }
 </style>
 </head>
 <body>
@@ -328,12 +367,14 @@
 <!-- POPUP -->
 <!-- LIGHTBOX -->
 <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:9998;flex-direction:column;align-items:center;justify-content:center;">
-  <button onclick="closeLightbox()" style="position:absolute;top:20px;right:24px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:2px;">✕</button>
-  <img id="lb-img" src="" style="max-width:90vw;max-height:80vh;object-fit:contain;display:block;">
-  <div style="display:flex;align-items:center;gap:32px;margin-top:18px;">
-    <button onclick="lbNav(-1)" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:#c9a84c;font-size:32px;cursor:pointer;padding:14px 24px;line-height:1;">‹</button>
-    <span id="lb-count" style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.35);">1 / 3</span>
-    <button onclick="lbNav(1)" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:#c9a84c;font-size:32px;cursor:pointer;padding:14px 24px;line-height:1;">›</button>
+  <button id="lb-close" onclick="closeLightbox()">✕</button>
+  <div id="lb-inner" style="display:flex;flex-direction:column;align-items:center;gap:0;">
+    <img id="lb-img" src="" style="max-width:90vw;max-height:72vh;object-fit:contain;display:block;">
+    <div style="display:flex;align-items:center;gap:28px;margin-top:24px;">
+      <button class="lb-nav" onclick="lbNav(-1)">‹</button>
+      <span id="lb-count" style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.35);min-width:40px;text-align:center;">1 / 3</span>
+      <button class="lb-nav" onclick="lbNav(1)">›</button>
+    </div>
   </div>
 </div>
 
@@ -504,13 +545,20 @@ document.querySelectorAll('.event').forEach(el => observer.observe(el));
     lbIndex = i;
     var lb = document.getElementById('lightbox');
     lb.style.display = 'flex';
-    document.getElementById('lb-img').src = lbPhotos[lbIndex];
+    lb.classList.add('lb-open');
+    var img = document.getElementById('lb-img');
+    img.src = lbPhotos[lbIndex];
+    img.classList.add('lb-img-anim');
     document.getElementById('lb-count').textContent = (lbIndex+1) + ' / ' + lbPhotos.length;
   }
   function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
   function lbNav(dir) {
     lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
-    document.getElementById('lb-img').src = lbPhotos[lbIndex];
+    var img = document.getElementById('lb-img');
+    img.classList.remove('lb-img-anim');
+    void img.offsetWidth;
+    img.classList.add('lb-img-anim');
+    img.src = lbPhotos[lbIndex];
     document.getElementById('lb-count').textContent = (lbIndex+1) + ' / ' + lbPhotos.length;
   }
   document.getElementById('lightbox').addEventListener('click', function(e){ if(e.target===this) closeLightbox(); });
