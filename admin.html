@@ -53,6 +53,10 @@ function login() {
       return r.json();
     })
     .then(function(visits) {
+      if (!Array.isArray(visits)) {
+        document.getElementById('error').textContent = 'function error: ' + JSON.stringify(visits);
+        return;
+      }
       document.getElementById('login').style.display = 'none';
       document.getElementById('panel').style.display = 'block';
       renderVisits(visits);
