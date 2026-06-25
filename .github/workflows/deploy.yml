@@ -16,4 +16,4 @@ jobs:
         run: |
           npm install -g netlify-cli
           npm install
-          netlify deploy --prod --dir=. --site=lachatzcamp --auth=${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify deploy --prod --dir=. --site=lachatzcamp --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --skip-functions-cache
