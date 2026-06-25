@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0c0a; color: #f0e6c8; font-family: 'DM Mono', monospace; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; }
+
+  #login { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 320px; }
+  #login h1 { font-size: 11px; letter-spacing: 5px; color: rgba(201,168,76,0.6); text-transform: uppercase; margin-bottom: 8px; }
+  #login input { width: 100%; background: rgba(201,168,76,0.05); border: 1px solid rgba(201,168,76,0.25); color: #f0e6c8; font-family: 'DM Mono', monospace; font-size: 14px; padding: 12px 16px; outline: none; letter-spacing: 2px; text-align: center; }
+  #login input:focus { border-color: #c9a84c; }
+  #login button { width: 100%; background: none; border: 1px solid #c9a84c; color: #c9a84c; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; padding: 12px; cursor: pointer; transition: background 0.2s; }
+  #login button:hover { background: rgba(201,168,76,0.1); }
+  #error { font-size: 11px; color: #d07070; letter-spacing: 2px; }
+
+  #panel { display: none; width: 100%; max-width: 560px; }
+  #panel h1 { font-size: 11px; letter-spacing: 5px; color: rgba(201,168,76,0.6); text-transform: uppercase; margin-bottom: 32px; text-align: center; }
+  #count { font-size: 11px; letter-spacing: 3px; color: rgba(255,255,255,0.3); text-align: center; margin-bottom: 24px; }
+
+  .visit { border: 1px solid rgba(201,168,76,0.12); padding: 16px 20px; margin-bottom: 10px; }
+  .visit-time { font-size: 13px; color: #c9a84c; letter-spacing: 1px; }
+  .visit-date { font-size: 11px; color: rgba(255,255,255,0.3); letter-spacing: 2px; margin-top: 4px; }
+  .visit-ua  { font-size: 10px; color: rgba(255,255,255,0.15); margin-top: 6px; word-break: break-all; }
+  .empty { text-align: center; color: rgba(255,255,255,0.2); font-size: 12px; letter-spacing: 3px; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1>Admin</h1>
+  <input type="password" id="pw" placeholder="password" onkeydown="if(event.key==='Enter')login()">
+  <button onclick="login()">enter</button>
+  <span id="error"></span>
+</div>
+
+<div id="panel">
+  <h1>Visitor Log</h1>
+  <div id="count"></div>
+  <div id="visits-list"></div>
+</div>
+
+<script>
+function login() {
+  var pw = document.getElementById('pw').value;
+  if (!pw) return;
+  fetch('/.netlify/functions/get-visits?p=' + encodeURIComponent(pw))
+    .then(function(r) {
+      if (r.status === 401) throw new Error('wrong password');
+      return r.json();
+    })
+    .then(function(visits) {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('panel').style.display = 'block';
+      renderVisits(visits);
+    })
+    .catch(function(e) {
+      document.getElementById('error').textContent = e.message === 'wrong password' ? 'incorrect password' : 'error — try again';
+    });
+}
+
+function renderVisits(visits) {
+  var countEl = document.getElementById('count');
+  var listEl  = document.getElementById('visits-list');
+  countEl.textContent = visits.length + ' visit' + (visits.length !== 1 ? 's' : '') + ' total';
+  if (visits.length === 0) {
+    listEl.innerHTML = '<div class="empty">no visits yet</div>';
+    return;
+  }
+  listEl.innerHTML = visits.map(function(v) {
+    var d = new Date(v.timestamp);
+    var date = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    var time = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    var device = v.ua.includes('iPhone') || v.ua.includes('Android') ? 'mobile' : v.ua.includes('iPad') ? 'tablet' : 'desktop';
+    return '<div class="visit"><div class="visit-time">' + time + '</div><div class="visit-date">' + date + ' &nbsp;·&nbsp; ' + device + '</div></div>';
+  }).join('');
+}
+</script>
+</body>
+</html>

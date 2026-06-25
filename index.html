@@ -584,6 +584,9 @@ document.querySelectorAll('.event').forEach(el => observer.observe(el));
       });
     }, { threshold: 0 }).observe(goodbyePlayer);
   }
+
+  // log visit
+  fetch('/.netlify/functions/log-visit').catch(function(){});
 </script>
 </body>
 </html>
