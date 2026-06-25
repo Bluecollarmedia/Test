@@ -5,7 +5,11 @@ exports.handler = async function(event) {
     return { statusCode: 204, headers: { 'Access-Control-Allow-Origin': '*' }, body: '' };
   }
   try {
-    const store = getStore('visits');
+    const store = getStore({
+      name: 'visits',
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_API_TOKEN
+    });
     const now = new Date();
     await store.set(`visit-${now.getTime()}`, JSON.stringify({
       timestamp: now.toISOString(),

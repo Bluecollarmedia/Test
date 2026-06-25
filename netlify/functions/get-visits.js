@@ -11,7 +11,11 @@ exports.handler = async function(event) {
   if (hash !== PASSWORD_HASH) return { statusCode: 401, body: JSON.stringify({ error: 'wrong password' }) };
 
   try {
-    const store = getStore('visits');
+    const store = getStore({
+      name: 'visits',
+      siteID: process.env.NETLIFY_SITE_ID,
+      token: process.env.NETLIFY_API_TOKEN
+    });
     const { blobs } = await store.list();
     const visits = [];
     for (const blob of blobs) {
