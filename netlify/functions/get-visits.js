@@ -13,8 +13,8 @@ exports.handler = async function(event) {
   try {
     const store = getStore({
       name: 'visits',
-      siteID: process.env.NETLIFY_SITE_ID,
-      token: process.env.NETLIFY_API_TOKEN
+      siteID: 'edc5baa1-dc73-41f1-ae4e-047506160b63',
+      token: 'nfp_8j4BPj8bDLv394xAAd8b2phfdgVuv5v22067'
     });
     const { blobs } = await store.list();
     const visits = [];
