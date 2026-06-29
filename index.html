@@ -370,6 +370,7 @@
   <button id="lb-close" onclick="closeLightbox()">✕</button>
   <div id="lb-inner" style="display:flex;flex-direction:column;align-items:center;gap:0;">
     <img id="lb-img" src="" style="max-width:90vw;max-height:72vh;object-fit:contain;display:block;">
+    <video id="lb-vid" src="" style="max-width:90vw;max-height:72vh;display:none;" controls playsinline></video>
     <div style="display:flex;align-items:center;gap:28px;margin-top:24px;">
       <button class="lb-nav" onclick="lbNav(-1)">‹</button>
       <span id="lb-count" style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.35);min-width:40px;text-align:center;">1 / 3</span>
@@ -460,7 +461,7 @@
     <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">27</span><span class="year">2026</span><span class="time">1:34 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Chana is added to the chat <span class="tag tag-milestone">finally</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">27</span><span class="year">2026</span><span class="time">10:00 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>David, Baila, and Shmuel go ice skating then to the park</li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">29</span><span class="year">2026</span><span class="time">3:00 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Dassa, David, Shmuel, Chana, Baila go to Crystal Lake</li><li>Bonfire made <span class="tag tag-sweet">🔥 3am</span></li></ul></div></div></div>
-    <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">29</span><span class="year">2026</span><span class="time">10:00 PM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>T-shirt painting night with David, Chana, Shmuel, and Baila</li></ul><button class="see-photos-btn" onclick="openLightbox(0)">see photos</button><ul class="event-items" style="display:none"></ul></div></div></div>
+    <div class="event"><div class="event-date"><span class="month">Mar</span><span class="day">29</span><span class="year">2026</span><span class="time">10:00 PM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>T-shirt painting night with David, Chana, Shmuel, and Baila</li></ul><button class="see-photos-btn" onclick="openLightbox(0,0)">see photos</button><ul class="event-items" style="display:none"></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Apr</span><span class="day">1</span><span class="year">2026</span><span class="time">3:31 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Chemistry joke between David and Chana begins <span class="tag tag-sweet">spark</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Apr</span><span class="day">4</span><span class="year">2026</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>David realizes he likes Chana <span class="tag tag-milestone">realization</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Apr</span><span class="day">6</span><span class="year">2026</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>David puts his arm around Chana in the Airbnb</li></ul></div></div></div>
@@ -494,6 +495,7 @@
     <div class="event"><div class="event-date"><span class="month">Jun</span><span class="day">15</span><span class="year">2026</span><span class="time">Sunday</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Baila likes the Status <span class="tag tag-milestone">👀</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Jun</span><span class="day">19</span><span class="year">2026</span><span class="time">2:00 AM</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Shmuel texts Baila: "hey" — still awaiting a response <span class="tag tag-chaos">pending</span></li></ul></div></div></div>
     <div class="event"><div class="event-date"><span class="month">Jun</span><span class="day">22</span><span class="year">2026</span><span class="time">Monday</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Shmuel pulls up to David and Chana's parking lot — nobody is shocked. After all this, did anyone really think it was over? <span class="tag tag-milestone">inevitable</span></li></ul></div></div></div>
+    <div class="event"><div class="event-date"><span class="month">Jun</span><span class="day">26</span><span class="year">2026</span><span class="time">Friday</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>Shmuel and Baila head out to a Shabbos glamping in Pennsylvania</li></ul></div></div></div>
   </div>
 </section>
 
@@ -502,6 +504,7 @@
   <div class="era-header"><div class="era-line"></div><div class="era-title">Back On · Under the Radar · 2026</div><div class="era-line"></div></div>
   <div class="timeline">
     <div class="event"><div class="event-date"><span class="month">Jun</span><span class="day">23</span><span class="year">2026</span><span class="time">Tuesday</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>The truth comes out — when Shmuel texted "hey" on June 19th, she actually did respond. He picked her up that night and drove her to a wedding in Brooklyn the next day. They're back on.</li><li>Nobody could know. <span class="tag tag-milestone">back on</span></li></ul></div></div></div>
+    <div class="event"><div class="event-date"><span class="month">Jun</span><span class="day">27</span><span class="year">2026</span><span class="time">Sat Night</span></div><div class="event-body"><div class="event-card"><ul class="event-items"><li>David and Chana head out for the night — checked into a place, watched a movie, slept, and headed home in the morning</li></ul><button class="see-photos-btn" onclick="openLightbox(1,0)">see photos</button></div></div></div>
   </div>
 </section>
 
@@ -539,30 +542,51 @@ document.querySelectorAll('.event').forEach(el => observer.observe(el));
   })();
 
   // lightbox
-  var lbPhotos = ['photos/tshirt/1.jpg','photos/tshirt/2.jpg','photos/tshirt/3.jpg'];
+  var lbGalleries = [
+    [{t:'img',s:'photos/tshirt/1.jpg'},{t:'img',s:'photos/tshirt/2.jpg'},{t:'img',s:'photos/tshirt/3.jpg'}],
+    [{t:'img',s:'photos/june27/photo1.jpg'},{t:'img',s:'photos/june27/photo2.jpg'},{t:'vid',s:'photos/june27/video1.mp4'},{t:'vid',s:'photos/june27/video2.mp4'},{t:'vid',s:'photos/june27/video3.mp4'}]
+  ];
+  var lbGallery = lbGalleries[0];
   var lbIndex = 0;
-  function openLightbox(i) {
-    lbIndex = i;
+  function lbShow() {
+    var item = lbGallery[lbIndex];
+    var img = document.getElementById('lb-img');
+    var vid = document.getElementById('lb-vid');
+    if (item.t === 'vid') {
+      img.style.display = 'none';
+      vid.style.display = 'block';
+      vid.src = item.s;
+      vid.load();
+    } else {
+      vid.pause(); vid.src = '';
+      vid.style.display = 'none';
+      img.style.display = 'block';
+      img.classList.remove('lb-img-anim');
+      void img.offsetWidth;
+      img.classList.add('lb-img-anim');
+      img.src = item.s;
+    }
+    document.getElementById('lb-count').textContent = (lbIndex+1) + ' / ' + lbGallery.length;
+  }
+  function openLightbox(gallery, i) {
+    lbGallery = lbGalleries[gallery];
+    lbIndex = i || 0;
     var lb = document.getElementById('lightbox');
     lb.style.display = 'flex';
     lb.classList.add('lb-open');
-    var img = document.getElementById('lb-img');
-    img.src = lbPhotos[lbIndex];
-    img.classList.add('lb-img-anim');
-    document.getElementById('lb-count').textContent = (lbIndex+1) + ' / ' + lbPhotos.length;
+    lbShow();
   }
-  function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
+  function closeLightbox() {
+    var vid = document.getElementById('lb-vid');
+    vid.pause(); vid.src = '';
+    document.getElementById('lightbox').style.display = 'none';
+  }
   function lbNav(dir) {
-    lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
-    var img = document.getElementById('lb-img');
-    img.classList.remove('lb-img-anim');
-    void img.offsetWidth;
-    img.classList.add('lb-img-anim');
-    img.src = lbPhotos[lbIndex];
-    document.getElementById('lb-count').textContent = (lbIndex+1) + ' / ' + lbPhotos.length;
+    lbIndex = (lbIndex + dir + lbGallery.length) % lbGallery.length;
+    lbShow();
   }
   document.getElementById('lightbox').addEventListener('click', function(e){ if(e.target===this) closeLightbox(); });
-  document.addEventListener('keydown', function(e){ 
+  document.addEventListener('keydown', function(e){
     if(document.getElementById('lightbox').style.display==='flex') {
       if(e.key==='ArrowRight') lbNav(1);
       if(e.key==='ArrowLeft') lbNav(-1);
