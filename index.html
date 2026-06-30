@@ -610,7 +610,7 @@ document.querySelectorAll('.event').forEach(el => observer.observe(el));
   }
 
   // log visit
-  fetch('/.netlify/functions/log-visit').catch(function(){});
+  fetch('/log-visit').catch(function(){});
 </script>
 </body>
 </html>

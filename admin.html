@@ -47,7 +47,7 @@
 function login() {
   var pw = document.getElementById('pw').value;
   if (!pw) return;
-  fetch('/.netlify/functions/get-visits?p=' + encodeURIComponent(pw))
+  fetch('/get-visits?p=' + encodeURIComponent(pw))
     .then(function(r) {
       if (r.status === 401) throw new Error('wrong password');
       return r.json();
