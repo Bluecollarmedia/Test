@@ -14,7 +14,7 @@ exports.handler = async function(event) {
     const store = getStore({
       name: 'visits',
       siteID: 'edc5baa1-dc73-41f1-ae4e-047506160b63',
-      token: 'nfp_8j4BPj8bDLv394xAAd8b2phfdgVuv5v22067'
+      token: 'nfp_8sEbEccgDAmxPv6r1CkXnovaSmZmiJnRe6bd'
     });
     const { blobs } = await store.list();
     const visits = [];
