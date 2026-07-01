@@ -1,4 +1,4 @@
-name: Cloudflare Pages (auto-deploys via GitHub integration)
+name: Deploy to Netlify
 
 on:
   push:
@@ -7,7 +7,13 @@ on:
       - 'claude/**'
 
 jobs:
-  placeholder:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Cloudflare Pages deploys automatically on push"
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Netlify
+        run: |
+          npm install -g netlify-cli
+          npm install
+          netlify deploy --prod --dir=. --site=lachatzcamp --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} --skip-functions-cache
