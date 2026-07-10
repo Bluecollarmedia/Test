@@ -23,7 +23,7 @@ exports.handler = async function(event) {
       siteID: 'edc5baa1-dc73-41f1-ae4e-047506160b63',
       token: 'nfp_8sEbEccgDAmxPv6r1CkXnovaSmZmiJnRe6bd'
     });
-    const id = 'event-' + Date.now();
+    const id = body.event.id || ('event-' + Date.now());
     const ev = { ...body.event, id };
     await store.set(id, JSON.stringify(ev));
     return {

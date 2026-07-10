@@ -100,8 +100,11 @@ body { background:#0d0c0a; color:#f0e6c8; font-family:'DM Mono',monospace; min-h
 .dyn-event-date { font-size:11px; color:#c9a84c; letter-spacing:1px; }
 .dyn-event-era { font-size:9px; letter-spacing:3px; color:rgba(255,255,255,0.2); margin-top:2px; text-transform:uppercase; }
 .dyn-event-text { font-size:12px; color:rgba(255,255,255,0.6); margin-top:6px; line-height:1.5; }
-.dyn-event-del { background:none; border:1px solid rgba(208,112,112,0.3); color:rgba(208,112,112,0.5); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:6px 12px; cursor:pointer; flex-shrink:0; }
+.dyn-event-actions { display:flex; gap:8px; flex-shrink:0; }
+.dyn-event-del { background:none; border:1px solid rgba(208,112,112,0.3); color:rgba(208,112,112,0.5); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:6px 12px; cursor:pointer; }
 .dyn-event-del:hover { border-color:#d07070; color:#d07070; }
+.dyn-event-edit { background:none; border:1px solid rgba(201,168,76,0.25); color:rgba(201,168,76,0.4); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:6px 12px; cursor:pointer; }
+.dyn-event-edit:hover { border-color:#c9a84c; color:#c9a84c; }
 .empty-state { text-align:center; color:rgba(255,255,255,0.2); font-size:11px; letter-spacing:3px; margin-top:40px; }
 
 .divider { border:none; border-top:1px solid rgba(201,168,76,0.08); margin:24px 0; }
@@ -211,6 +214,7 @@ var pw = '';
 var photos = [];
 var selectedColor = '#c9a84c';
 var loginBusy = false;
+var editingId = null;
 
 // ── AUTH ──────────────────────────────────────────────
 function login() {
@@ -226,17 +230,43 @@ function login() {
     .then(function(visits) {
       if (!Array.isArray(visits)) throw new Error('err');
       pw = val;
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('panel').style.display = 'block';
-      renderVisits(visits);
-      loadDynEvents();
-      addEntry();
+      localStorage.setItem('admin_pw', val);
+      showPanel(visits);
     })
     .catch(function(e) {
       document.getElementById('login-err').textContent = e.message === 'wrong' ? 'incorrect password' : 'error — try again';
       loginBusy = false;
     });
 }
+
+function showPanel(visits) {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('panel').style.display = 'block';
+  renderVisits(visits);
+  loadDynEvents();
+  addEntry();
+}
+
+// auto-login if saved
+(function() {
+  var saved = localStorage.getItem('admin_pw');
+  if (!saved) return;
+  loginBusy = true;
+  fetch('/.netlify/functions/get-visits?p=' + encodeURIComponent(saved))
+    .then(function(r) {
+      if (r.status === 401) throw new Error('wrong');
+      return r.json();
+    })
+    .then(function(visits) {
+      if (!Array.isArray(visits)) throw new Error('err');
+      pw = saved;
+      showPanel(visits);
+    })
+    .catch(function() {
+      localStorage.removeItem('admin_pw');
+      loginBusy = false;
+    });
+})();
 
 // ── TABS ──────────────────────────────────────────────
 function switchTab(name) {
@@ -361,6 +391,7 @@ function submitEvent() {
     items: items,
     media: media
   };
+  if (editingId) eventObj.id = editingId;
 
   var btn = document.getElementById('submit-btn');
   btn.disabled = true;
@@ -395,11 +426,13 @@ function setStatus(msg, type) {
 }
 
 function resetForm() {
+  editingId = null;
   document.getElementById('entries-list').innerHTML = '';
   document.getElementById('photo-previews').innerHTML = '';
   document.getElementById('d-day').value = '';
   document.getElementById('d-time').value = '';
   photos = [];
+  document.getElementById('submit-btn').textContent = 'publish to timeline';
   addEntry();
 }
 
@@ -454,13 +487,17 @@ function renderDynEvents() {
     var preview = ev.items.map(function(i){ return i.text; }).join(' / ');
     if (preview.length > 80) preview = preview.substring(0,80) + '…';
     var mediaNote = ev.media && ev.media.length ? ' · ' + ev.media.length + ' photo(s)' : '';
+    var eid = ev.id.replace(/'/g, "\\'");
     return '<div class="dyn-event">' +
       '<div class="dyn-event-info">' +
         '<div class="dyn-event-date">' + dateStr + mediaNote + '</div>' +
         '<div class="dyn-event-era">' + eraName + '</div>' +
         '<div class="dyn-event-text">' + preview + '</div>' +
       '</div>' +
-      '<button class="dyn-event-del" onclick="deleteEvent(\'' + ev.id + '\')">delete</button>' +
+      '<div class="dyn-event-actions">' +
+        '<button class="dyn-event-edit" onclick="editEvent(\'' + eid + '\')">edit</button>' +
+        '<button class="dyn-event-del" onclick="deleteEvent(\'' + eid + '\')">delete</button>' +
+      '</div>' +
     '</div>';
   }).join('');
 }
@@ -477,6 +514,58 @@ function deleteEvent(id) {
     if (res.success) loadDynEvents();
   })
   .catch(function() {});
+}
+
+function editEvent(id) {
+  var ev = dynEvents.find(function(e){ return e.id === id; });
+  if (!ev) return;
+
+  editingId = id;
+  switchTab('add');
+
+  // era
+  var eraSelect = document.getElementById('era-select');
+  var opt = eraSelect.querySelector('option[value="' + ev.era + '"]');
+  eraSelect.value = opt ? ev.era : 'new';
+  onEraChange();
+
+  // date
+  document.getElementById('d-month').value = ev.date.month;
+  document.getElementById('d-day').value = ev.date.day;
+  document.getElementById('d-year').value = ev.date.year;
+  document.getElementById('d-time').value = ev.date.time || '';
+
+  // entries
+  var list = document.getElementById('entries-list');
+  list.innerHTML = '';
+  ev.items.forEach(function(item) {
+    addEntry();
+    var block = list.lastElementChild;
+    block.querySelector('textarea').value = item.text;
+    if (item.tag) {
+      block.querySelectorAll('.tag-opt').forEach(function(o){ o.classList.remove('selected'); });
+      var tagEl = block.querySelector('.tag-opt[data-tag="' + item.tag + '"]');
+      if (tagEl) tagEl.classList.add('selected');
+    }
+  });
+
+  // photos — keep existing as placeholders (not re-loaded into canvas)
+  photos = [];
+  document.getElementById('photo-previews').innerHTML = '';
+  if (ev.media && ev.media.length) {
+    ev.media.forEach(function(m, i) {
+      photos.push(m.src);
+      var previews = document.getElementById('photo-previews');
+      var div = document.createElement('div');
+      div.className = 'photo-thumb';
+      div.dataset.idx = i;
+      div.innerHTML = '<img src="' + m.src + '"><button onclick="removePhoto(' + i + ')">×</button>';
+      previews.appendChild(div);
+    });
+  }
+
+  document.getElementById('submit-btn').textContent = 'save changes';
+  setStatus('editing event — make changes then save', '');
 }
 </script>
 </body>
