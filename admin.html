@@ -208,13 +208,16 @@ body { background:#0d0c0a; color:#f0e6c8; font-family:'DM Mono',monospace; min-h
 
 <script>
 var pw = '';
-var photos = []; // array of base64 strings
+var photos = [];
 var selectedColor = '#c9a84c';
+var loginBusy = false;
 
 // ── AUTH ──────────────────────────────────────────────
 function login() {
+  if (loginBusy) return;
   var val = document.getElementById('pw').value;
   if (!val) return;
+  loginBusy = true;
   fetch('/.netlify/functions/get-visits?p=' + encodeURIComponent(val))
     .then(function(r) {
       if (r.status === 401) throw new Error('wrong');
@@ -231,6 +234,7 @@ function login() {
     })
     .catch(function(e) {
       document.getElementById('login-err').textContent = e.message === 'wrong' ? 'incorrect password' : 'error — try again';
+      loginBusy = false;
     });
 }
 
