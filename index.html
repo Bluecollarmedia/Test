@@ -644,6 +644,52 @@ document.querySelectorAll('.event').forEach(el => observer.observe(el));
     }
   })();
 
+  // load dynamic events from admin panel
+  fetch('/.netlify/functions/get-events')
+    .then(function(r){ return r.json(); })
+    .then(function(events) {
+      if (!Array.isArray(events)) return;
+      events.forEach(function(ev) {
+        var eraClass = 'era-' + ev.era;
+        var section = document.querySelector('section.' + eraClass);
+        if (!section && ev.eraData) {
+          section = document.createElement('section');
+          section.className = 'era ' + eraClass;
+          var style = document.createElement('style');
+          style.textContent = '.' + eraClass + ' .era-title { color:' + ev.eraData.color + '; }';
+          document.head.appendChild(style);
+          section.innerHTML = '<div class="era-header"><div class="era-line"></div><div class="era-title">' + ev.eraData.name + '</div><div class="era-line"></div></div><div class="timeline"></div>';
+          var footer = document.querySelector('footer');
+          footer.parentNode.insertBefore(section, footer);
+        }
+        if (!section) return;
+        var timeline = section.querySelector('.timeline');
+        if (!timeline) return;
+
+        var dateHtml = '<span class="month">' + ev.date.month + '</span><span class="day">' + ev.date.day + '</span><span class="year">' + ev.date.year + '</span>';
+        if (ev.date.time) dateHtml += '<span class="time">' + ev.date.time + '</span>';
+
+        var itemsHtml = ev.items.map(function(item) {
+          var tagHtml = item.tag ? ' <span class="tag tag-' + item.tag + '">' + item.tag + '</span>' : '';
+          return '<li>' + item.text + tagHtml + '</li>';
+        }).join('');
+
+        var mediaHtml = '';
+        if (ev.media && ev.media.length > 0) {
+          var gIdx = lbGalleries.length;
+          lbGalleries.push(ev.media.map(function(m){ return { t: m.type, s: m.src }; }));
+          mediaHtml = '<button class="see-photos-btn" onclick="openLightbox(' + gIdx + ',0)">see photos</button>';
+        }
+
+        var el = document.createElement('div');
+        el.className = 'event';
+        el.innerHTML = '<div class="event-date">' + dateHtml + '</div><div class="event-body"><div class="event-card"><ul class="event-items">' + itemsHtml + '</ul>' + mediaHtml + '</div></div>';
+        timeline.appendChild(el);
+        observer.observe(el);
+      });
+    })
+    .catch(function(){});
+
   // log visit
   fetch('/.netlify/functions/log-visit').catch(function(){});
 </script>

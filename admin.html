@@ -3,84 +3,476 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<title>Admin · The Story So Far</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@1,300&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0d0c0a; color: #f0e6c8; font-family: 'DM Mono', monospace; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0c0a; color:#f0e6c8; font-family:'DM Mono',monospace; min-height:100vh; }
 
-  #login { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 320px; }
-  #login h1 { font-size: 11px; letter-spacing: 5px; color: rgba(201,168,76,0.6); text-transform: uppercase; margin-bottom: 8px; }
-  #login input { width: 100%; background: rgba(201,168,76,0.05); border: 1px solid rgba(201,168,76,0.25); color: #f0e6c8; font-family: 'DM Mono', monospace; font-size: 14px; padding: 12px 16px; outline: none; letter-spacing: 2px; text-align: center; }
-  #login input:focus { border-color: #c9a84c; }
-  #login button { width: 100%; background: none; border: 1px solid #c9a84c; color: #c9a84c; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 3px; padding: 12px; cursor: pointer; transition: background 0.2s; }
-  #login button:hover { background: rgba(201,168,76,0.1); }
-  #error { font-size: 11px; color: #d07070; letter-spacing: 2px; }
+/* LOGIN */
+#login { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:16px; padding:32px; }
+#login h1 { font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:300; font-size:48px; color:#f0e6c8; margin-bottom:8px; }
+#login p { font-size:11px; letter-spacing:4px; color:rgba(201,168,76,0.5); text-transform:uppercase; margin-bottom:16px; }
+.field { width:100%; max-width:280px; }
+.field input { width:100%; background:rgba(201,168,76,0.05); border:1px solid rgba(201,168,76,0.25); color:#f0e6c8; font-family:'DM Mono',monospace; font-size:15px; padding:13px 16px; outline:none; letter-spacing:3px; text-align:center; }
+.field input:focus { border-color:#c9a84c; }
+.btn-gold { background:none; border:1px solid #c9a84c; color:#c9a84c; font-family:'DM Mono',monospace; font-size:11px; letter-spacing:3px; padding:12px 32px; cursor:pointer; transition:background 0.2s; width:100%; max-width:280px; }
+.btn-gold:hover { background:rgba(201,168,76,0.1); }
+.err { font-size:11px; color:#d07070; letter-spacing:2px; min-height:16px; }
 
-  #panel { display: none; width: 100%; max-width: 560px; }
-  #panel h1 { font-size: 11px; letter-spacing: 5px; color: rgba(201,168,76,0.6); text-transform: uppercase; margin-bottom: 32px; text-align: center; }
-  #count { font-size: 11px; letter-spacing: 3px; color: rgba(255,255,255,0.3); text-align: center; margin-bottom: 24px; }
+/* PANEL */
+#panel { display:none; }
 
-  .visit { border: 1px solid rgba(201,168,76,0.12); padding: 16px 20px; margin-bottom: 10px; }
-  .visit-time { font-size: 13px; color: #c9a84c; letter-spacing: 1px; }
-  .visit-date { font-size: 11px; color: rgba(255,255,255,0.3); letter-spacing: 2px; margin-top: 4px; }
-  .visit-ua  { font-size: 10px; color: rgba(255,255,255,0.15); margin-top: 6px; word-break: break-all; }
-  .empty { text-align: center; color: rgba(255,255,255,0.2); font-size: 12px; letter-spacing: 3px; margin-top: 40px; }
+/* TOP BAR */
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:20px 32px; border-bottom:1px solid rgba(201,168,76,0.1); }
+.topbar-title { font-size:11px; letter-spacing:5px; color:rgba(201,168,76,0.6); text-transform:uppercase; }
+.topbar-link { font-size:11px; letter-spacing:2px; color:rgba(201,168,76,0.4); text-decoration:none; }
+.topbar-link:hover { color:#c9a84c; }
+
+/* TABS */
+.tabs { display:flex; border-bottom:1px solid rgba(201,168,76,0.1); padding:0 32px; }
+.tab { font-size:10px; letter-spacing:3px; text-transform:uppercase; padding:14px 20px; cursor:pointer; color:rgba(255,255,255,0.25); border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.2s; }
+.tab.active { color:#c9a84c; border-bottom-color:#c9a84c; }
+.tab-panel { display:none; padding:32px; max-width:680px; margin:0 auto; }
+.tab-panel.active { display:block; }
+
+/* FORM */
+.form-section { margin-bottom:28px; }
+.form-label { font-size:10px; letter-spacing:3px; color:rgba(201,168,76,0.5); text-transform:uppercase; margin-bottom:10px; display:block; }
+.form-input, .form-select, .form-textarea {
+  width:100%; background:rgba(201,168,76,0.05); border:1px solid rgba(201,168,76,0.18);
+  color:#f0e6c8; font-family:'DM Mono',monospace; font-size:13px; padding:11px 14px; outline:none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color:rgba(201,168,76,0.5); }
+.form-select { appearance:none; cursor:pointer; }
+.form-select option { background:#1a1710; }
+.form-textarea { resize:vertical; min-height:72px; line-height:1.6; }
+.date-row { display:grid; grid-template-columns:1fr 1fr 1fr 1.4fr; gap:10px; }
+
+/* ENTRIES */
+.entry-block { border:1px solid rgba(201,168,76,0.12); padding:16px; margin-bottom:10px; position:relative; }
+.entry-block textarea { width:100%; background:none; border:none; border-bottom:1px solid rgba(201,168,76,0.12); color:#f0e6c8; font-family:'DM Mono',monospace; font-size:13px; padding:8px 0; outline:none; resize:none; min-height:56px; line-height:1.6; }
+.tag-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.tag-opt { font-size:9px; letter-spacing:2px; padding:5px 10px; border:1px solid rgba(201,168,76,0.2); cursor:pointer; color:rgba(255,255,255,0.35); transition:all 0.15s; }
+.tag-opt.selected { background:rgba(201,168,76,0.15); border-color:#c9a84c; color:#c9a84c; }
+.tag-opt[data-tag="milestone"].selected { border-color:#8aba90; color:#8aba90; background:rgba(138,186,144,0.1); }
+.tag-opt[data-tag="drama"].selected { border-color:#d07070; color:#d07070; background:rgba(208,112,112,0.1); }
+.tag-opt[data-tag="chaos"].selected { border-color:#d0a070; color:#d0a070; background:rgba(208,160,112,0.1); }
+.tag-opt[data-tag="lachatz"].selected { border-color:#a890d0; color:#a890d0; background:rgba(168,144,208,0.1); }
+.remove-entry { position:absolute; top:10px; right:12px; background:none; border:none; color:rgba(255,255,255,0.2); cursor:pointer; font-size:16px; }
+.remove-entry:hover { color:#d07070; }
+.add-entry-btn { font-size:10px; letter-spacing:3px; color:rgba(201,168,76,0.4); background:none; border:1px dashed rgba(201,168,76,0.2); padding:10px; width:100%; cursor:pointer; margin-top:4px; }
+.add-entry-btn:hover { border-color:rgba(201,168,76,0.5); color:#c9a84c; }
+
+/* NEW ERA */
+#new-era-fields { display:none; }
+.era-color-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.era-color-swatch { width:28px; height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
+.era-color-swatch.selected { border-color:#fff; }
+
+/* PHOTOS */
+.photo-drop { border:1px dashed rgba(201,168,76,0.25); padding:32px; text-align:center; cursor:pointer; transition:border-color 0.2s; position:relative; }
+.photo-drop:hover, .photo-drop.drag-over { border-color:#c9a84c; }
+.photo-drop input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.photo-drop-label { font-size:11px; letter-spacing:2px; color:rgba(255,255,255,0.25); pointer-events:none; }
+.photo-previews { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.photo-thumb { position:relative; width:80px; height:80px; }
+.photo-thumb img { width:80px; height:80px; object-fit:cover; display:block; }
+.photo-thumb button { position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.7); border:none; color:#fff; width:18px; height:18px; cursor:pointer; font-size:11px; line-height:18px; }
+
+/* SUBMIT */
+.submit-btn { width:100%; background:none; border:1px solid #c9a84c; color:#c9a84c; font-family:'DM Mono',monospace; font-size:11px; letter-spacing:4px; padding:15px; cursor:pointer; margin-top:8px; transition:background 0.2s; }
+.submit-btn:hover { background:rgba(201,168,76,0.1); }
+.submit-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.status-msg { font-size:11px; letter-spacing:2px; text-align:center; margin-top:12px; min-height:18px; }
+.status-msg.ok { color:#8aba90; }
+.status-msg.err { color:#d07070; }
+
+/* VISITOR LOG */
+.visit { border:1px solid rgba(201,168,76,0.1); padding:14px 18px; margin-bottom:8px; }
+.visit-time { font-size:13px; color:#c9a84c; }
+.visit-date { font-size:10px; color:rgba(255,255,255,0.3); letter-spacing:2px; margin-top:3px; }
+.count-line { font-size:10px; letter-spacing:3px; color:rgba(255,255,255,0.25); margin-bottom:20px; }
+
+/* MANAGE EVENTS */
+.dyn-event { border:1px solid rgba(201,168,76,0.1); padding:16px 18px; margin-bottom:8px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.dyn-event-info { flex:1; }
+.dyn-event-date { font-size:11px; color:#c9a84c; letter-spacing:1px; }
+.dyn-event-era { font-size:9px; letter-spacing:3px; color:rgba(255,255,255,0.2); margin-top:2px; text-transform:uppercase; }
+.dyn-event-text { font-size:12px; color:rgba(255,255,255,0.6); margin-top:6px; line-height:1.5; }
+.dyn-event-del { background:none; border:1px solid rgba(208,112,112,0.3); color:rgba(208,112,112,0.5); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:6px 12px; cursor:pointer; flex-shrink:0; }
+.dyn-event-del:hover { border-color:#d07070; color:#d07070; }
+.empty-state { text-align:center; color:rgba(255,255,255,0.2); font-size:11px; letter-spacing:3px; margin-top:40px; }
+
+.divider { border:none; border-top:1px solid rgba(201,168,76,0.08); margin:24px 0; }
 </style>
 </head>
 <body>
 
 <div id="login">
   <h1>Admin</h1>
-  <input type="password" id="pw" placeholder="password" onkeydown="if(event.key==='Enter')login()">
-  <button onclick="login()">enter</button>
-  <span id="error"></span>
+  <p>the story so far</p>
+  <div class="field">
+    <input type="password" id="pw" placeholder="password" onkeydown="if(event.key==='Enter')login()">
+  </div>
+  <button class="btn-gold" onclick="login()">enter</button>
+  <span class="err" id="login-err"></span>
 </div>
 
 <div id="panel">
-  <h1>Visitor Log</h1>
-  <div id="count"></div>
-  <div id="visits-list"></div>
+  <div class="topbar">
+    <span class="topbar-title">Admin Panel</span>
+    <a href="/" class="topbar-link">← back to timeline</a>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('add')">Add Event</div>
+    <div class="tab" onclick="switchTab('visits')">Visitor Log</div>
+    <div class="tab" onclick="switchTab('manage')">Manage Events</div>
+  </div>
+
+  <!-- ADD EVENT -->
+  <div class="tab-panel active" id="tab-add">
+    <div class="form-section">
+      <label class="form-label">Era</label>
+      <select class="form-select" id="era-select" onchange="onEraChange()">
+        <option value="early">Early History · 2024</option>
+        <option value="reconnect">Reconnection Era · 2025</option>
+        <option value="revival">Lachatz Revival · Chana Era · 2026</option>
+        <option value="david">David &amp; Chana Era · 2026</option>
+        <option value="trying">Shmuel Trying to Get Back On · 2026</option>
+        <option value="backon" selected>Back On · Under the Radar · 2026</option>
+        <option value="new">+ New Era</option>
+      </select>
+    </div>
+
+    <div id="new-era-fields" class="form-section">
+      <label class="form-label">New Era Name</label>
+      <input class="form-input" id="new-era-name" placeholder="e.g. Something New · 2026">
+      <label class="form-label" style="margin-top:14px;">Era Color</label>
+      <div class="era-color-row" id="era-colors">
+        <div class="era-color-swatch selected" style="background:#c9a84c" data-color="#c9a84c" onclick="selectColor(this)"></div>
+        <div class="era-color-swatch" style="background:#7ab0d0" data-color="#7ab0d0" onclick="selectColor(this)"></div>
+        <div class="era-color-swatch" style="background:#a890d0" data-color="#a890d0" onclick="selectColor(this)"></div>
+        <div class="era-color-swatch" style="background:#8aba90" data-color="#8aba90" onclick="selectColor(this)"></div>
+        <div class="era-color-swatch" style="background:#d07070" data-color="#d07070" onclick="selectColor(this)"></div>
+        <div class="era-color-swatch" style="background:#e8c97a" data-color="#e8c97a" onclick="selectColor(this)"></div>
+        <div class="era-color-swatch" style="background:#d0a070" data-color="#d0a070" onclick="selectColor(this)"></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Date &amp; Time</label>
+      <div class="date-row">
+        <select class="form-select" id="d-month">
+          <option>Jan</option><option>Feb</option><option>Mar</option><option>Apr</option>
+          <option>May</option><option>Jun</option><option>Jul</option><option>Aug</option>
+          <option>Sep</option><option>Oct</option><option>Nov</option><option>Dec</option>
+        </select>
+        <input class="form-input" id="d-day" type="number" min="1" max="31" placeholder="Day">
+        <input class="form-input" id="d-year" type="number" placeholder="Year" value="2026">
+        <input class="form-input" id="d-time" placeholder="Time (optional)">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Entries</label>
+      <div id="entries-list"></div>
+      <button class="add-entry-btn" onclick="addEntry()">+ add entry</button>
+    </div>
+
+    <div class="form-section">
+      <label class="form-label">Photos (optional)</label>
+      <div class="photo-drop" id="photo-drop">
+        <input type="file" accept="image/*" multiple onchange="handlePhotos(this.files)">
+        <span class="photo-drop-label">tap to add photos</span>
+      </div>
+      <div class="photo-previews" id="photo-previews"></div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitEvent()">publish to timeline</button>
+    <div class="status-msg" id="submit-status"></div>
+  </div>
+
+  <!-- VISITOR LOG -->
+  <div class="tab-panel" id="tab-visits">
+    <div class="count-line" id="visit-count"></div>
+    <div id="visit-list"></div>
+  </div>
+
+  <!-- MANAGE EVENTS -->
+  <div class="tab-panel" id="tab-manage">
+    <div class="count-line" id="dyn-count"></div>
+    <div id="dyn-list"></div>
+  </div>
 </div>
 
 <script>
+var pw = '';
+var photos = []; // array of base64 strings
+var selectedColor = '#c9a84c';
+
+// ── AUTH ──────────────────────────────────────────────
 function login() {
-  var pw = document.getElementById('pw').value;
-  if (!pw) return;
-  fetch('/.netlify/functions/get-visits?p=' + encodeURIComponent(pw))
+  var val = document.getElementById('pw').value;
+  if (!val) return;
+  fetch('/.netlify/functions/get-visits?p=' + encodeURIComponent(val))
     .then(function(r) {
-      if (r.status === 401) throw new Error('wrong password');
+      if (r.status === 401) throw new Error('wrong');
       return r.json();
     })
     .then(function(visits) {
-      if (!Array.isArray(visits)) {
-        document.getElementById('error').textContent = 'function error: ' + JSON.stringify(visits);
-        return;
-      }
+      if (!Array.isArray(visits)) throw new Error('err');
+      pw = val;
       document.getElementById('login').style.display = 'none';
       document.getElementById('panel').style.display = 'block';
       renderVisits(visits);
+      loadDynEvents();
+      addEntry();
     })
     .catch(function(e) {
-      document.getElementById('error').textContent = e.message === 'wrong password' ? 'incorrect password' : 'error — try again';
+      document.getElementById('login-err').textContent = e.message === 'wrong' ? 'incorrect password' : 'error — try again';
     });
 }
 
+// ── TABS ──────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(function(t,i) {
+    var names = ['add','visits','manage'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(function(p) {
+    p.classList.remove('active');
+  });
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── ERA ───────────────────────────────────────────────
+function onEraChange() {
+  var v = document.getElementById('era-select').value;
+  document.getElementById('new-era-fields').style.display = v === 'new' ? 'block' : 'none';
+}
+function selectColor(el) {
+  document.querySelectorAll('.era-color-swatch').forEach(function(s){ s.classList.remove('selected'); });
+  el.classList.add('selected');
+  selectedColor = el.dataset.color;
+}
+
+// ── ENTRIES ───────────────────────────────────────────
+function addEntry() {
+  var list = document.getElementById('entries-list');
+  var idx = list.children.length;
+  var div = document.createElement('div');
+  div.className = 'entry-block';
+  div.innerHTML =
+    '<textarea placeholder="What happened..." rows="2"></textarea>' +
+    '<div class="tag-row">' +
+      '<span class="tag-opt" data-tag="">no tag</span>' +
+      '<span class="tag-opt" data-tag="milestone">milestone</span>' +
+      '<span class="tag-opt" data-tag="drama">drama</span>' +
+      '<span class="tag-opt" data-tag="chaos">chaos</span>' +
+      '<span class="tag-opt" data-tag="lachatz">lachatz</span>' +
+    '</div>' +
+    (idx > 0 ? '<button class="remove-entry" onclick="this.closest(\'.entry-block\').remove()">×</button>' : '');
+  div.querySelectorAll('.tag-opt').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      div.querySelectorAll('.tag-opt').forEach(function(o){ o.classList.remove('selected'); });
+      opt.classList.add('selected');
+    });
+  });
+  div.querySelector('.tag-opt').classList.add('selected');
+  list.appendChild(div);
+}
+
+// ── PHOTOS ────────────────────────────────────────────
+function handlePhotos(files) {
+  Array.from(files).forEach(function(file) {
+    compressImage(file, 1200, 0.78).then(function(b64) {
+      photos.push(b64);
+      renderPhotoPreview(b64, photos.length - 1);
+    });
+  });
+}
+function compressImage(file, maxW, quality) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = new Image();
+      img.onload = function() {
+        var canvas = document.createElement('canvas');
+        var ratio = Math.min(maxW / img.width, 1);
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function renderPhotoPreview(b64, idx) {
+  var previews = document.getElementById('photo-previews');
+  var div = document.createElement('div');
+  div.className = 'photo-thumb';
+  div.dataset.idx = idx;
+  div.innerHTML = '<img src="' + b64 + '"><button onclick="removePhoto(' + idx + ')">×</button>';
+  previews.appendChild(div);
+}
+function removePhoto(idx) {
+  photos[idx] = null;
+  var thumb = document.querySelector('.photo-thumb[data-idx="' + idx + '"]');
+  if (thumb) thumb.remove();
+}
+
+// ── SUBMIT ────────────────────────────────────────────
+function submitEvent() {
+  var era = document.getElementById('era-select').value;
+  var month = document.getElementById('d-month').value;
+  var day = document.getElementById('d-day').value;
+  var year = document.getElementById('d-year').value;
+  var time = document.getElementById('d-time').value.trim();
+
+  if (!day || !year) { setStatus('fill in the date', 'err'); return; }
+
+  var items = [];
+  document.querySelectorAll('.entry-block').forEach(function(block) {
+    var text = block.querySelector('textarea').value.trim();
+    if (!text) return;
+    var selected = block.querySelector('.tag-opt.selected');
+    var tag = selected ? selected.dataset.tag : '';
+    items.push({ text: text, tag: tag });
+  });
+  if (items.length === 0) { setStatus('add at least one entry', 'err'); return; }
+
+  var media = photos.filter(Boolean).map(function(b64) { return { type:'img', src:b64 }; });
+
+  var eraData = era === 'new'
+    ? { id: 'custom-' + Date.now(), name: document.getElementById('new-era-name').value || 'New Era', color: selectedColor }
+    : null;
+
+  var eventObj = {
+    era: era === 'new' ? (eraData.id) : era,
+    eraData: eraData,
+    date: { month: month, day: day, year: year, time: time },
+    items: items,
+    media: media
+  };
+
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  setStatus('publishing...', '');
+
+  fetch('/.netlify/functions/add-event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p: pw, event: eventObj })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) {
+      setStatus('published ✓', 'ok');
+      resetForm();
+      loadDynEvents();
+    } else {
+      setStatus(res.error || 'error', 'err');
+    }
+    btn.disabled = false;
+  })
+  .catch(function(e) {
+    setStatus('network error', 'err');
+    btn.disabled = false;
+  });
+}
+
+function setStatus(msg, type) {
+  var el = document.getElementById('submit-status');
+  el.textContent = msg;
+  el.className = 'status-msg' + (type ? ' ' + type : '');
+}
+
+function resetForm() {
+  document.getElementById('entries-list').innerHTML = '';
+  document.getElementById('photo-previews').innerHTML = '';
+  document.getElementById('d-day').value = '';
+  document.getElementById('d-time').value = '';
+  photos = [];
+  addEntry();
+}
+
+// ── VISITOR LOG ───────────────────────────────────────
 function renderVisits(visits) {
-  var countEl = document.getElementById('count');
-  var listEl  = document.getElementById('visits-list');
+  var countEl = document.getElementById('visit-count');
+  var listEl = document.getElementById('visit-list');
   countEl.textContent = visits.length + ' visit' + (visits.length !== 1 ? 's' : '') + ' total';
   if (visits.length === 0) {
-    listEl.innerHTML = '<div class="empty">no visits yet</div>';
+    listEl.innerHTML = '<div class="empty-state">no visits yet</div>';
     return;
   }
   listEl.innerHTML = visits.map(function(v) {
     var d = new Date(v.timestamp);
     var date = d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     var time = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    var device = v.ua.includes('iPhone') || v.ua.includes('Android') ? 'mobile' : v.ua.includes('iPad') ? 'tablet' : 'desktop';
+    var device = v.ua && (v.ua.includes('iPhone') || v.ua.includes('Android')) ? 'mobile' : v.ua && v.ua.includes('iPad') ? 'tablet' : 'desktop';
     return '<div class="visit"><div class="visit-time">' + time + '</div><div class="visit-date">' + date + ' &nbsp;·&nbsp; ' + device + '</div></div>';
   }).join('');
+}
+
+// ── MANAGE DYNAMIC EVENTS ────────────────────────────
+var dynEvents = [];
+var ERA_NAMES = {
+  early:'Early History · 2024', reconnect:'Reconnection Era · 2025',
+  revival:'Lachatz Revival · Chana Era · 2026', david:'David & Chana Era · 2026',
+  trying:'Shmuel Trying to Get Back On · 2026', backon:'Back On · Under the Radar · 2026'
+};
+
+function loadDynEvents() {
+  fetch('/.netlify/functions/get-events')
+    .then(function(r) { return r.json(); })
+    .then(function(events) {
+      dynEvents = events;
+      renderDynEvents();
+    })
+    .catch(function() {});
+}
+
+function renderDynEvents() {
+  var countEl = document.getElementById('dyn-count');
+  var listEl = document.getElementById('dyn-list');
+  countEl.textContent = dynEvents.length + ' dynamic event' + (dynEvents.length !== 1 ? 's' : '');
+  if (dynEvents.length === 0) {
+    listEl.innerHTML = '<div class="empty-state">no events added yet</div>';
+    return;
+  }
+  listEl.innerHTML = dynEvents.map(function(ev) {
+    var d = ev.date;
+    var dateStr = d.month + ' ' + d.day + ', ' + d.year + (d.time ? ' · ' + d.time : '');
+    var eraName = ERA_NAMES[ev.era] || (ev.eraData && ev.eraData.name) || ev.era;
+    var preview = ev.items.map(function(i){ return i.text; }).join(' / ');
+    if (preview.length > 80) preview = preview.substring(0,80) + '…';
+    var mediaNote = ev.media && ev.media.length ? ' · ' + ev.media.length + ' photo(s)' : '';
+    return '<div class="dyn-event">' +
+      '<div class="dyn-event-info">' +
+        '<div class="dyn-event-date">' + dateStr + mediaNote + '</div>' +
+        '<div class="dyn-event-era">' + eraName + '</div>' +
+        '<div class="dyn-event-text">' + preview + '</div>' +
+      '</div>' +
+      '<button class="dyn-event-del" onclick="deleteEvent(\'' + ev.id + '\')">delete</button>' +
+    '</div>';
+  }).join('');
+}
+
+function deleteEvent(id) {
+  if (!confirm('Delete this event?')) return;
+  fetch('/.netlify/functions/delete-event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ p: pw, id: id })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) {
+    if (res.success) loadDynEvents();
+  })
+  .catch(function() {});
 }
 </script>
 </body>
