@@ -116,7 +116,7 @@ body { background:#0d0c0a; color:#f0e6c8; font-family:'DM Mono',monospace; min-h
   <h1>Admin</h1>
   <p>the story so far</p>
   <div class="field">
-    <input type="password" id="pw" placeholder="password" onkeydown="if(event.key==='Enter')login()">
+    <input type="password" id="pw" placeholder="password" onkeydown="if(event.key==='Enter')login()" autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
   </div>
   <button class="btn-gold" onclick="login()">enter</button>
   <span class="err" id="login-err"></span>
